@@ -94,7 +94,7 @@ First read the source for what few plugins there are! more to come, contribution
 
 This may change! Its still early days, future plugins might include a 1kb 128x64x1 display device, and a keyboard joystick, so you can control the system when running with the cursor or wasd keys, I can see all the ingredients for a game! 
 
-**void initialise(void* pInst)** used to to set stuff up call whenever an instance is created. See the plugin source to see the things that you need to do like set up the plugins render texture, allocate its variables area etc 
+**void initialise(void\* pInst)** used to to set stuff up call whenever an instance is created. See the plugin source to see the things that you need to do like set up the plugins render texture, allocate its variables area etc 
 
 **int getAddressSize()** This defines the size of the memory block that the plugin is mapped to.
 
