@@ -60,7 +60,7 @@ below the register view is an indication of recent memory activity.
 
 The remainder of the items on the screen are provided by plugin instances.
 
-Pressing the space bar will single step the 68000. It also serves to halt a run. If you want to skip an instruction press s. You can set the system running by pressing the r key, every 60th of a second it will execute 100,000 instructions then update the UI.  When running with a suitable binary can result in such extravaganzas as the 8x8x1 sprite editor as seen in the above screen shot and this ![short video](https://youtu.be/pJ5as4MCeCk).
+Pressing the space bar will single step the 68000. It also serves to halt a run. If you want to skip an instruction press s. You can set the system running by pressing the r key, every 60th of a second it will execute 100,000 instructions then update the UI.  When running with a suitable binary can result in such extravaganzas as the 8x8x1 sprite editor as seen in the above screen shot and this [short video](https://youtu.be/pJ5as4MCeCk).
 
  	
 
