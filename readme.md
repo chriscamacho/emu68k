@@ -1,6 +1,6 @@
 # Emu68k simulated 68000 system with device plugins
 
-![8x8x1 editor](file:./screenies/first-machine-xml.png)
+![8x8x1 editor](./screenies/first-machine-xml.png)
 
 ## About
 
@@ -11,17 +11,17 @@ It is mainly intended as a tool to help with my experiments with a 68008 and too
 Its still early days and there is lots to do! [I'd welcome ideas and contributions, and relevant chat about hardware implementation.](http://bedroomcoders.co.uk/captcha/)
 
 #### file structure
-	asm-src				68k assembly language files
-	plugins				plugin library binaries
-	obj					build objects
-	readme.md			this file
-	src					C source code
-	screenies			screen shots
-	machines			machine specification files
-	plug-src			C source code for plugins
-	Makefile	
-	include				include sources
-	resources			runtime resources (textures etc) for emu68k and plugins
+	asm-src			68k assembly language files
+	plugins			plugin library binaries
+	obj			build objects
+	readme.md		this file
+	src			C source code
+	screenies		screen shots
+	machines		machine specification files
+	plug-src		C source code for plugins
+	Makefile		
+	include			include sources
+	resources		runtime resources (textures etc) for emu68k and plugins
 	support/Musashi		68k simulation library
 	support/srec		srecord files utility
 	support/a68k		68k assembler
@@ -98,12 +98,12 @@ This may change! Its still early days, future plugins might include a 1kb 128x64
 
 **int getAddressSize()** This defines the size of the memory block that the plugin is mapped to.
 
-**byte getAddress(void* pInst, int address)** this is called when a memory read is done by the processor in the plugins mapped range.
+**byte getAddress(void\* pInst, int address)** this is called when a memory read is done by the processor in the plugins mapped range.
 
-**void setAddress(void* pInst, int address, byte data)** called when a memory write happens inside the mapped memory range
+**void setAddress(void\* pInst, int address, byte data)** called when a memory write happens inside the mapped memory range
 
-**void clicked(void* pInst, int x, int y)** if the user clicks on the plugins area this is called with the screen coordinates.
+**void clicked(void\* pInst, int x, int y)** if the user clicks on the plugins area this is called with the screen coordinates.
 
-**void draw(void* pInst)** the plugin instance is drawn on its own render texture, this is a good place to also update anything that needs to be updated continuously.
+**void draw(void\* pInst)** the plugin instance is drawn on its own render texture, this is a good place to also update anything that needs to be updated continuously.
 
-**void setProperty(void* inst, const char* prop, void* value)** this is used to set properties specific to a plugin type, it could be bit labels or potentially more unique settings.
+**void setProperty(void\* inst, const char\* prop, void\* value)** this is used to set properties specific to a plugin type, it could be bit labels or potentially more unique settings.
