@@ -1,5 +1,6 @@
 asm-src/*.bin
 asm-src/*.s
+asm-src/*.lst
 emu68k
 obj/*.o
 plugins/*.so

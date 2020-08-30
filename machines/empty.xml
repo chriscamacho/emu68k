@@ -1,4 +1,4 @@
 
 <machine name="machine1">
-   
+	<plugin libName="template" x="400" y="400" addressStart="0xA0000"/>
 </machine>

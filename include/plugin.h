@@ -1,11 +1,9 @@
-//#include <glib.h>
 #include <gmodule.h>
-//#include <gtk/gtk.h>
 #include "raylib.h"
 
 typedef unsigned char byte;
 
-typedef void (* initialiseFunc) (void* pInst);//, Vector2 at, Font fnt);
+typedef void (* initialiseFunc) (void* pInst);
 typedef int (* getAddressSizeFunc) ();
 typedef byte (* getAddressFunc) (void* pInst, int address);
 typedef void (* setAddressFunc) (void* pInst, int address, byte data);
