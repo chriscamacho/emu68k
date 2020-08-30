@@ -412,25 +412,31 @@ unsigned int m68k_read_memory_8(unsigned int address)
       return pl->getAddress(p, address);
     }
   }
-  
-  return mem[address];
+  if (address < RAMSIZE) return mem[address];
+  snprintf(nextlog(),80,"TODO bus error, access not handled\n");
+  return 0xff;
 }
 
-unsigned int m68k_read_memory_16(unsigned int address) {
+unsigned int m68k_read_memory_16(unsigned int address) 
+{
   snprintf(nextlog(),80,"Step %08X : 16 bit read at %08X, %04X\n", numStep, address, mem[address]<<8 | mem[address+1]);
-  return mem[address]<<8 | mem[address+1];
+  if (address < RAMSIZE-1) return mem[address]<<8 | mem[address+1];
+  snprintf(nextlog(),80,"TODO bus error, access not handled\n");
+  return 0xffff;
 }
 
-unsigned int m68k_read_memory_32(unsigned int address) {
+unsigned int m68k_read_memory_32(unsigned int address) 
+{
   snprintf(nextlog(),80,"Step %08X : 32 bit read at %08X, %08X\n", numStep, address, mem[address]<<24 | mem[address+1]<<16 | mem[address+2]<<8 | mem[address+3]);
-  return mem[address]<<24 | mem[address+1]<<16 | mem[address+2]<<8 | mem[address+3];
+  if (address < RAMSIZE-3) return mem[address]<<24 | mem[address+1]<<16 | mem[address+2]<<8 | mem[address+3];
+  snprintf(nextlog(),80,"TODO bus error, access not handled\n");
+  return 0xffffffff;  
 }
 
 
 // potentially later not in same thread as UI, so can't draw stuff.....
 void m68k_write_memory_8(unsigned int address, unsigned int value) 
 {
-  mem[address] = value & 0xff;
   snprintf(statstr,80,"Step %08X : 8 bit write at %08X, %02X\n", numStep, address, mem[address]);
 
   for (GList* l = plugins; l != NULL; l = l->next) {
@@ -441,20 +447,30 @@ void m68k_write_memory_8(unsigned int address, unsigned int value)
     if ( address >= a && address < s ) {
       return pl->setAddress(p, address, value);
     }
-  }  
+  } 
   
+  if (address < RAMSIZE) mem[address] = value & 0xff;
+  snprintf(nextlog(),80,"TODO bus error, access not handled\n");
 }
 
-void m68k_write_memory_16(unsigned int address, unsigned int value) {
-  mem[address]   = (value>>8) & 0xff;
-  mem[address+1] = (value)    & 0xff;
+void m68k_write_memory_16(unsigned int address, unsigned int value) 
+{
   snprintf(statstr,80,"Step %08X : 16 bit write at %08X, %04X\n", numStep, address, value&0xffff);
+  if (address < RAMSIZE-1) {
+    mem[address]   = (value>>8) & 0xff;
+    mem[address+1] = (value)    & 0xff;
+  }
+  snprintf(nextlog(),80,"TODO bus error, access not handled\n");
 }
 
-void m68k_write_memory_32(unsigned int address, unsigned int value) {
-  mem[address]   = (value>>24) & 0xff;
-  mem[address+1] = (value>>16) & 0xff;
-  mem[address+2] = (value>>8)  & 0xff;
-  mem[address+3] = (value)     & 0xff;
+void m68k_write_memory_32(unsigned int address, unsigned int value) 
+{
   snprintf(statstr,80,"Step %08X : 32 bit write at %08X, %08X\n", numStep, address, value&0xffffffff);
+  if (address < RAMSIZE-3) {
+    mem[address]   = (value>>24) & 0xff;
+    mem[address+1] = (value>>16) & 0xff;
+    mem[address+2] = (value>>8)  & 0xff;
+    mem[address+3] = (value)     & 0xff;
+  }
+  snprintf(nextlog(),80,"TODO bus error, access not handled\n");
 }

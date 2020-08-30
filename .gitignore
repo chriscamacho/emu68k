@@ -1,0 +1,16 @@
+asm-src/*.bin
+asm-src/*.s
+emu68k
+obj/*.o
+plugins/*.so
+support/Musashi/*.o
+support/Musashi/m68kops.c
+support/Musashi/m68kops.h
+support/Musashi/m68kmake
+support/Musashi/softfloat/*.o
+support/a68k/*.o
+support/a68k/A68k
+support/srec/srec2bin
+support/srec/bin2srec
+support/srec/*.o
+
