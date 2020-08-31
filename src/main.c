@@ -248,7 +248,7 @@ int main(int argc, char* argv[])
   g_markup_parse_context_free (context);
   g_free (content);
   
-
+  signed int memview = 0;
 
   while(!stop && !WindowShouldClose()) {
 
@@ -305,6 +305,15 @@ int main(int argc, char* argv[])
       emuSkip = false;
       emuStep = false;
     }
+    if (IsKeyPressed(KEY_PAGE_DOWN)) {
+      memview+=16*8;
+      if (memview>RAMSIZE-16*8) memview=0;
+    }
+    if (IsKeyPressed(KEY_PAGE_UP)) {
+      memview-=16*8;
+      if (memview<0) memview=RAMSIZE-16*8;
+    }
+    
 
     DrawFPS(0, 0);
 
@@ -323,36 +332,47 @@ int main(int argc, char* argv[])
     }
     
     pc = m68k_get_reg(NULL, M68K_REG_PC);
-
-    instr_size = m68k_disassemble(buff, pc, M68K_CPU_TYPE_68000);
-    make_hex(buff2, pc, instr_size);
-    DrawTextEx(font, FormatText("PC>%08X: %-16s: %s", pc, buff2, buff), (Vector2){ 360, 40 }, font.baseSize, 2, WHITE);
-
-    for (int i=0;i<5;i++) {
-      pc += instr_size;
+    
+    if (pc > RAMSIZE) {
+      // assuming all plugins are inside ram range for now...
+      m68k_pulse_bus_error();
+    } else {
       instr_size = m68k_disassemble(buff, pc, M68K_CPU_TYPE_68000);
       make_hex(buff2, pc, instr_size);
-      DrawTextEx(font, FormatText("   %08X: %-16s: %s", pc, buff2, buff), (Vector2){ 360, 60+i*20 }, font.baseSize, 2, WHITE);
-    }
-    DrawTextEx(font, "- Recent memory activity -", (Vector2){ 120, 200 }, font.baseSize, 2, WHITE);
-    DrawTextEx(font, FormatText(">%s", statstr), (Vector2){ 20, 220 }, font.baseSize, 2, WHITE);
-    for (int i=0;i<6;i++) {
-      DrawTextEx(font, FormatText("%s", readptr[i]), (Vector2){ 20, 260+i*20 }, font.baseSize, 2, WHITE);
-    }
+      DrawTextEx(font, FormatText("PC>%08X: %-16s: %s", pc, buff2, buff), (Vector2){ 360, 40 }, font.baseSize, 2, WHITE);
 
-    
-    for (GList* l = plugins; l != NULL; l = l->next) {
-      plugInstStruct* p = (plugInstStruct*)l->data;
-      pluginStruct* pl = p->plug;
+      for (int i=0;i<5;i++) {
+        pc += instr_size;
+        instr_size = m68k_disassemble(buff, pc, M68K_CPU_TYPE_68000);
+        make_hex(buff2, pc, instr_size);
+        DrawTextEx(font, FormatText("   %08X: %-16s: %s", pc, buff2, buff), (Vector2){ 360, 60+i*20 }, font.baseSize, 2, WHITE);
+      }
+      DrawTextEx(font, "- Recent memory activity -", (Vector2){ 120, 200 }, font.baseSize, 2, WHITE);
+      DrawTextEx(font, FormatText(">%s", statstr), (Vector2){ 20, 220 }, font.baseSize, 2, WHITE);
+      for (int i=0;i<6;i++) {
+        DrawTextEx(font, FormatText("%s", readptr[i]), (Vector2){ 20, 260+i*20 }, font.baseSize, 2, WHITE);
+      }
       
-      //update
-      if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) pl->clicked(p, GetMouseX(), GetMouseY());
-    
-      // then draw...
-      pl->draw(p); // draw to the render texture
-      DrawTextureRec(p->outTx.texture,(Rectangle){0, 0, p->size.x, -p->size.y },(Vector2){p->pos.x, p->pos.y}, WHITE);
-      DrawTextEx(font, FormatText("%s", p->name), (Vector2){ p->pos.x+2+p->size.x, p->pos.y-4 }, font.baseSize, 2, WHITE);
-      DrawTextEx(font, FormatText("%X", p->addressStart), (Vector2){ p->pos.x+2+p->size.x, p->pos.y+14 }, font.baseSize, 2, WHITE);
+      for (int i=0; i<8; i++) {
+        DrawTextEx(font, FormatText("%08X :", memview+i*16), (Vector2){ 600, 200+i*20 }, font.baseSize, 2, WHITE);
+        make_hex(buff2, memview+i*16, 16);
+        DrawTextEx(font, FormatText("%s", buff2), (Vector2){ 720, 200+i*20 }, font.baseSize, 2, WHITE);
+      }
+
+      
+      for (GList* l = plugins; l != NULL; l = l->next) {
+        plugInstStruct* p = (plugInstStruct*)l->data;
+        pluginStruct* pl = p->plug;
+        
+        //update
+        if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) pl->clicked(p, GetMouseX(), GetMouseY());
+      
+        // then draw...
+        pl->draw(p); // draw to the render texture
+        DrawTextureRec(p->outTx.texture,(Rectangle){0, 0, p->size.x, -p->size.y },(Vector2){p->pos.x, p->pos.y}, WHITE);
+        DrawTextEx(font, FormatText("%s", p->name), (Vector2){ p->pos.x+2+p->size.x, p->pos.y-4 }, font.baseSize, 2, WHITE);
+        DrawTextEx(font, FormatText("%X", p->addressStart), (Vector2){ p->pos.x+2+p->size.x, p->pos.y+14 }, font.baseSize, 2, WHITE);
+      }
     }
     
     EndDrawing();
@@ -401,76 +421,85 @@ char* nextlog()
 
 unsigned int m68k_read_memory_8(unsigned int address) 
 {
-  snprintf(nextlog(),80,"Step %08X : 8 bit read at %08X, %02X\n", numStep, address, mem[address]);
-
-  for (GList* l = plugins; l != NULL; l = l->next) {
-    plugInstStruct* p = (plugInstStruct*)l->data;
-    pluginStruct* pl = p->plug;
-    int a = p->addressStart;
-    int s = a + pl->getAddressSize(p);
-    if ( address >= a && address < s ) {
-      return pl->getAddress(p, address);
-    }
+  if (address < RAMSIZE) {
+    for (GList* l = plugins; l != NULL; l = l->next) {
+      plugInstStruct* p = (plugInstStruct*)l->data;
+      pluginStruct* pl = p->plug;
+      int a = p->addressStart;
+      int s = a + pl->getAddressSize(p);
+      if ( address >= a && address < s ) {
+        return pl->getAddress(p, address);
+      }
+    }    
+    snprintf(nextlog(),80,"Step %08X : 8 bit read at %08X, %02X", numStep, address, mem[address]);
+    return mem[address];
   }
-  if (address < RAMSIZE) return mem[address];
-  snprintf(nextlog(),80,"TODO bus error, access not handled\n");
+  snprintf(nextlog(),80,"TODO bus error, access not handled %08X",address);
   return 0xff;
 }
 
 unsigned int m68k_read_memory_16(unsigned int address) 
 {
-  snprintf(nextlog(),80,"Step %08X : 16 bit read at %08X, %04X\n", numStep, address, mem[address]<<8 | mem[address+1]);
-  if (address < RAMSIZE-1) return mem[address]<<8 | mem[address+1];
-  snprintf(nextlog(),80,"TODO bus error, access not handled\n");
+  if (address < RAMSIZE-1) {
+    snprintf(nextlog(),80,"Step %08X : 16 bit read at %08X, %04X", numStep, address, mem[address]<<8 | mem[address+1]);
+    return mem[address]<<8 | mem[address+1];
+  }
+  snprintf(nextlog(),80,"TODO bus error, access not handled %08X",address);
   return 0xffff;
 }
 
 unsigned int m68k_read_memory_32(unsigned int address) 
 {
-  snprintf(nextlog(),80,"Step %08X : 32 bit read at %08X, %08X\n", numStep, address, mem[address]<<24 | mem[address+1]<<16 | mem[address+2]<<8 | mem[address+3]);
-  if (address < RAMSIZE-3) return mem[address]<<24 | mem[address+1]<<16 | mem[address+2]<<8 | mem[address+3];
-  snprintf(nextlog(),80,"TODO bus error, access not handled\n");
-  return 0xffffffff;  
+  if (address < RAMSIZE-3) {
+    snprintf(nextlog(),80,"Step %08X : 32 bit read at %08X, %08X", numStep, address, mem[address]<<24 | mem[address+1]<<16 | mem[address+2]<<8 | mem[address+3]);
+    return mem[address]<<24 | mem[address+1]<<16 | mem[address+2]<<8 | mem[address+3];
+  }
+  snprintf(nextlog(),80,"TODO bus error, access not handled %08X",address);
+  return 0xffffffff;
 }
 
 
 // potentially later not in same thread as UI, so can't draw stuff.....
 void m68k_write_memory_8(unsigned int address, unsigned int value) 
 {
-  snprintf(statstr,80,"Step %08X : 8 bit write at %08X, %02X\n", numStep, address, mem[address]);
-
-  for (GList* l = plugins; l != NULL; l = l->next) {
-    plugInstStruct* p = (plugInstStruct*)l->data;
-    pluginStruct* pl = p->plug;
-    int a = p->addressStart;
-    int s = a + pl->getAddressSize(p);
-    if ( address >= a && address < s ) {
-      return pl->setAddress(p, address, value);
-    }
-  } 
-  
-  if (address < RAMSIZE) mem[address] = value & 0xff;
-  snprintf(nextlog(),80,"TODO bus error, access not handled\n");
+  if (address < RAMSIZE) {
+    mem[address] = value & 0xff;
+    
+    for (GList* l = plugins; l != NULL; l = l->next) {
+      plugInstStruct* p = (plugInstStruct*)l->data;
+      pluginStruct* pl = p->plug;
+      int a = p->addressStart;
+      int s = a + pl->getAddressSize(p);
+      if ( address >= a && address < s ) {
+        return pl->setAddress(p, address, value);
+      }
+    } 
+    snprintf(statstr,80,"Step %08X : 8 bit write at %08X, %02X\n", numStep, address, mem[address]);
+  } else {
+    snprintf(nextlog(),80,"TODO bus error, access not handled %08X",address);
+  }
 }
 
 void m68k_write_memory_16(unsigned int address, unsigned int value) 
 {
-  snprintf(statstr,80,"Step %08X : 16 bit write at %08X, %04X\n", numStep, address, value&0xffff);
   if (address < RAMSIZE-1) {
     mem[address]   = (value>>8) & 0xff;
     mem[address+1] = (value)    & 0xff;
+    snprintf(statstr,80,"Step %08X : 16 bit write at %08X, %04X", numStep, address, value&0xffff);
+  } else {
+    snprintf(nextlog(),80,"TODO bus error, access not handled %08X",address);
   }
-  snprintf(nextlog(),80,"TODO bus error, access not handled\n");
 }
 
 void m68k_write_memory_32(unsigned int address, unsigned int value) 
 {
-  snprintf(statstr,80,"Step %08X : 32 bit write at %08X, %08X\n", numStep, address, value&0xffffffff);
   if (address < RAMSIZE-3) {
     mem[address]   = (value>>24) & 0xff;
     mem[address+1] = (value>>16) & 0xff;
     mem[address+2] = (value>>8)  & 0xff;
     mem[address+3] = (value)     & 0xff;
+    snprintf(statstr,80,"Step %08X : 32 bit write at %08X, %08X", numStep, address, value&0xffffffff);
+  } else {
+    snprintf(nextlog(),80,"TODO bus error, access not handled %08X",address);
   }
-  snprintf(nextlog(),80,"TODO bus error, access not handled\n");
 }
