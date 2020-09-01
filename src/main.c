@@ -336,6 +336,7 @@ int main(int argc, char* argv[])
     if (pc > RAMSIZE) {
       // assuming all plugins are inside ram range for now...
       m68k_pulse_bus_error();
+      DrawTextEx(font, FormatText("PC>%08X: ", pc), (Vector2){ 360, 40 }, font.baseSize, 2, RED);
     } else {
       instr_size = m68k_disassemble(buff, pc, M68K_CPU_TYPE_68000);
       make_hex(buff2, pc, instr_size);

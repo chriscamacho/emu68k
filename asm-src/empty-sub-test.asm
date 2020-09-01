@@ -1,4 +1,4 @@
-stackSize     equ   8*1024
+stackSize     equ   512
 
     dc.l      end+stackSize            ; start up SP
 ;    dc.l      stack
@@ -94,14 +94,10 @@ varA:
     dc.w	    $0102
 varB:
     dc.w      $0304
-res1:
-    dc.l      0
-res2:
-    dc.l      0
-res3:
-    dc.l      0
-res4:
-    dc.l      0
+
+
+oops: 
+    dc.l      $fffffff0
     
 start:
 
@@ -109,17 +105,15 @@ start:
     ;add.l     #1,A0
     ;move.w    (A0),D0      ; do a bus error
 
-
-    sub.l     #16,A7        ; return space for 4 l words    
-    move.w    varB,-(A7)
-    move.w    varA,-(A7)    ; reverse order    
+    move.w    varA,D0
+    move.w    d0,-(A7)
+    move.w    varB,D0
+    move.w    d0,-(A7)
     
+    movea.l   oops,A7
     jsr       test
     
-    move.l    (A7)+,D3
-    move.l    (A7)+,D2
-    move.l    (A7)+,D1
-    move.l    (A7)+,D0
+
     
 
 done:
@@ -127,22 +121,12 @@ done:
     bra       start
         
 test:
-    link      A6,#-20
-
-    move.l    #$43432121,D0
-    move.l    D0,20(A6)
-
-    move.l    #$87876564,D0
-    move.l    D0,16(A6)
-
-    move.l    #$87654321,D0
-    move.l    D0,12(A6)
-
-    move.l    #$12345678,D0
-    move.l    D0,8(A6)
+    link      A6,#12         ; 
+    move.w    d0,4(A6)
+    move.w    d1,8(A6)
     
     unlk      A6
-    add.l     #4,SP
+    add.l     #12,SP
+    
     rts
-
 end:

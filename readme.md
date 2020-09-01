@@ -29,7 +29,7 @@ Its still early days and there is lots to do! [I'd welcome ideas and contributio
 
 ## Building
 
-There is a provided Makefile, however there are three support utilities in the support directory that need to be compiled (just run make) before the Makefile for Emu68k will work 
+There is a provided Makefile, however there are two support utilities (support/a68k/A68k and support/srec/srec2bin) in the support directory that need to be compiled (just run make) before the Makefile for Emu68k will work 
 
 Additionally you will need to get and compile [raylib](http://raylib.com ) (github recommended) 
 
@@ -39,6 +39,14 @@ The Makefile is expecting raylib to be at the same directory level that emu68k i
 	./devel/raylib/
 
 usually building raylib is simply a case of entering raylib/src and running make.
+
+**Note** that Musashi is now a submodule, you might need to do:
+
+	git submodule update --init --recursive
+
+There is no need to build and run the op code generator as that is done automagically if needed, if you need to change the settings there is a separate config file include/m68kconf-emu68k.h, the Musashi sources are directly included with the build.
+
+
 
 ## Building 68k ASM source
 
