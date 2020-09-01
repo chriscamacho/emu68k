@@ -1,7 +1,7 @@
 stackSize     equ   512
 
-    dc.l      end+stackSize            ; start up SP
-;    dc.l      stack
+;    dc.l      end+stackSize            ; start up SP
+    dc.l      stack
     dc.l      start           ; start up PC
     
 ; started off as a dreamcast vector table
@@ -74,7 +74,7 @@ stackSize     equ   512
     rorg      $1000
   
 INT:
-      illegal
+      jmp   INT
       
 BUS_E_INT:      ; Bus Error Exception
       illegal
@@ -87,9 +87,25 @@ ADRS_E_INT:     ; Address Error Exception
     move      #end+stackSize,SP
     jmp       start
     
-
-    
-
+    dc.l      $a5a5a5a5,$a5a5a5a5,$a5a5a5a5,$a5a5a5a5,$a5a5a5a5,$a5a5a5a5,$a5a5a5a5,$a5a5a5a5
+    dc.l      $a5a5a5a5,$a5a5a5a5,$a5a5a5a5,$a5a5a5a5,$a5a5a5a5,$a5a5a5a5,$a5a5a5a5,$a5a5a5a5
+    dc.l      $a5a5a5a5,$a5a5a5a5,$a5a5a5a5,$a5a5a5a5,$a5a5a5a5,$a5a5a5a5,$a5a5a5a5,$a5a5a5a5
+    dc.l      $a5a5a5a5,$a5a5a5a5,$a5a5a5a5,$a5a5a5a5,$a5a5a5a5,$a5a5a5a5,$a5a5a5a5,$a5a5a5a5
+    dc.l      $a5a5a5a5,$a5a5a5a5,$a5a5a5a5,$a5a5a5a5,$a5a5a5a5,$a5a5a5a5,$a5a5a5a5,$a5a5a5a5
+    dc.l      $a5a5a5a5,$a5a5a5a5,$a5a5a5a5,$a5a5a5a5,$a5a5a5a5,$a5a5a5a5,$a5a5a5a5,$a5a5a5a5
+    dc.l      $a5a5a5a5,$a5a5a5a5,$a5a5a5a5,$a5a5a5a5,$a5a5a5a5,$a5a5a5a5,$a5a5a5a5,$a5a5a5a5
+    dc.l      $a5a5a5a5,$a5a5a5a5,$a5a5a5a5,$a5a5a5a5,$a5a5a5a5,$a5a5a5a5,$a5a5a5a5,$a5a5a5a5
+    dc.l      $a5a5a5a5,$a5a5a5a5,$a5a5a5a5,$a5a5a5a5,$a5a5a5a5,$a5a5a5a5,$a5a5a5a5,$a5a5a5a5
+    dc.l      $a5a5a5a5,$a5a5a5a5,$a5a5a5a5,$a5a5a5a5,$a5a5a5a5,$a5a5a5a5,$a5a5a5a5,$a5a5a5a5
+    dc.l      $a5a5a5a5,$a5a5a5a5,$a5a5a5a5,$a5a5a5a5,$a5a5a5a5,$a5a5a5a5,$a5a5a5a5,$a5a5a5a5
+    dc.l      $a5a5a5a5,$a5a5a5a5,$a5a5a5a5,$a5a5a5a5,$a5a5a5a5,$a5a5a5a5,$a5a5a5a5,$a5a5a5a5
+    dc.l      $a5a5a5a5,$a5a5a5a5,$a5a5a5a5,$a5a5a5a5,$a5a5a5a5,$a5a5a5a5,$a5a5a5a5,$a5a5a5a5
+    dc.l      $a5a5a5a5,$a5a5a5a5,$a5a5a5a5,$a5a5a5a5,$a5a5a5a5,$a5a5a5a5,$a5a5a5a5,$a5a5a5a5
+    dc.l      $a5a5a5a5,$a5a5a5a5,$a5a5a5a5,$a5a5a5a5,$a5a5a5a5,$a5a5a5a5,$a5a5a5a5,$a5a5a5a5
+    dc.l      $a5a5a5a5,$a5a5a5a5,$a5a5a5a5,$a5a5a5a5,$a5a5a5a5,$a5a5a5a5,$a5a5a5a5,$a5a5a5a5
+    dc.l      $a5a5a5a5,$a5a5a5a5,$a5a5a5a5,$a5a5a5a5,$a5a5a5a5,$a5a5a5a5,$a5a5a5a5,$a5a5a5a5
+stack:    
+    dc.l      $FF00FF00,$FF00FF00,$FF00FF00,$FF00FF00,$FF00FF00,$FF00FF00,$FF00FF00,$FF00FF00
 varA:
     dc.w	    $0102
 varB:
@@ -105,12 +121,13 @@ start:
     ;add.l     #1,A0
     ;move.w    (A0),D0      ; do a bus error
 
-    move.w    varA,D0
-    move.w    d0,-(A7)
-    move.w    varB,D0
-    move.w    d0,-(A7)
+    move.w    (varA),-(A7)
+    move.w    (varB),-(A7)
     
-    movea.l   oops,A7
+    move.l    #$7ac71e55,d0   ; to show unharmed after jsr
+    move.l    #$beefdead,d1
+    
+;    movea.l   oops,A7
     jsr       test
     
 
@@ -121,12 +138,15 @@ done:
     bra       start
         
 test:
-    link      A6,#12         ; 
-    move.w    d0,4(A6)
-    move.w    d1,8(A6)
+
+    movem.l   d0-d1,-(A7)
+    move.w    14(A7),d0       ; +8 saved regs +4 ret address +2 2nd param
+    move.w    12(A7),d1       ; +8 saved regs +4 ret address
     
-    unlk      A6
-    add.l     #12,SP
+    ; use a stack frame here if extra local vars needed...
     
+    movem.l   (A7)+,d0-d1     ; restore regs
+    add.l     #4,A7             ; +8 is correct but there is return address
+    move.l    -4(A7),(A7)      ; correct for params put return address
     rts
 end:

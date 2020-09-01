@@ -1,8 +1,13 @@
     dc.l    end+1024            ; start up SP
     dc.l    start           ; start up PC
+
+; demonstrates the 128x64 frame buffer display and the VBL plugin
+; this got a bit out of hand and some sections of code rely
+; on certain registers not getting changed... not terribly good practice!
     
     rorg     $400
-    
+frame:
+    dc.l      0
 ypos:
     dc.w      2                 ; y pos of small text
 start:
@@ -60,7 +65,7 @@ yok:
     lsl.w     #4,D1
     add.w     D1,D0             ; screen offset in D0
 
-    move.l    #message,A2        ; start of message in A2
+    move.l    #message2,A2        ; start of message in A2
     
 print4:
     moveq     #0,D1
@@ -128,29 +133,60 @@ print42ok:
     move.b    D4,112(A0,D0.w)
 
     
-    add.l     #1,D0
+    add.l     #1,D0 ; destination offset
 
     bra.w     print4
 donePrint4:
 
+; wait for the VBL plugin to change
+; this is like waiting for a vertical blank...
+    move.b    ($B0000),D5
+waitforit:
+    move.b    ($B0000),D6
+    cmp.b     D5,D6
+    beq       waitforit
 
-
-    move.w    #$4000,D7
-dly:
-    nop
-    dbra      D7,dly
-
+; clear the frame buffer
 cls:
     move.w    #$400,D7
 clsloop:                        ; TODO !
     move.b    #0,(A0)+          ; reset at top of loop
     dbra      D7,clsloop
+
+; frame++    
+    move.l    (frame),D7
+    addq.l    #1,D7
+    move.l    D7,(frame)
+
+; put the frame value into the ascii message
+    moveq.l   #7,D5
+    move.l    #insert+8,A3      ; least significant nibble
+fl:
+    move.l    D7,D6
+    and.l     #$f,D6            ; isolate next nibble
+    
+    cmp     #10,D6              ; 0-9 is okay
+    blt     putAok
+    add.b   #7,D6               ; to get to a-f
+putAok:
+    add.b   #48,D6              ; make ascii
+    move.b  D6,-(A3)            ; insert into message
+    
+    lsr.l     #4,D7             ; next nibble
+    dbra      D5,fl
     
 		bra.w		  start			        ; main loop
     
+
+    rts
+    
 message:
-    dc.b    "Hello World!"
-    dc.b    0
+    dc.b    "Hello World!",0
+message2:
+    dc.b    "Frame Number: "
+insert:
+    dc.b    "--------",0
+
     
     EVEN                        ; in case strings are odd length!
 

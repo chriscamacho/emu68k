@@ -357,10 +357,16 @@ int main(int argc, char* argv[])
         DrawTextEx(font, FormatText("%s", readptr[i]), (Vector2){ 20, 260+i*20 }, font.baseSize, 2, WHITE);
       }
       
-      for (int i=0; i<8; i++) {
+      // this should be a setting on or off and offset
+      memview = m68k_get_reg(NULL, M68K_REG_A7)-48;
+      
+      
+      for (int i=0; i<7; i++) {
         DrawTextEx(font, FormatText("%08X :", memview+i*16), (Vector2){ 600, 200+i*20 }, font.baseSize, 2, WHITE);
         make_hex(buff2, memview+i*16, 16);
-        DrawTextEx(font, FormatText("%s", buff2), (Vector2){ 720, 200+i*20 }, font.baseSize, 2, WHITE);
+        Color c = WHITE;
+        if (i==3) c = YELLOW;
+        DrawTextEx(font, FormatText("%s", buff2), (Vector2){ 720, 200+i*20 }, font.baseSize, 2, c);
       }
 
       
