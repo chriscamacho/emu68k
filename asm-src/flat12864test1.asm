@@ -133,14 +133,19 @@ print42ok:
     bra.w     print4
 donePrint4:
 
-    move.w    #$8000,D7
+
+
+    move.w    #$4000,D7
 dly:
-    nop
-    nop
-    nop
     nop
     dbra      D7,dly
 
+cls:
+    move.w    #$400,D7
+clsloop:                        ; TODO !
+    move.b    #0,(A0)+          ; reset at top of loop
+    dbra      D7,clsloop
+    
 		bra.w		  start			        ; main loop
     
 message:

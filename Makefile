@@ -1,7 +1,7 @@
 MUSA=support/Musashi
 MUSAOBJ=$(MUSA)/m68kcpu.o $(MUSA)/m68kops.o $(MUSA)/softfloat/softfloat.o $(MUSA)/m68kdasm.o
 MUSASRC=$(MUSA)/m68kcpu.c $(MUSA)/m68kops.c $(MUSA)/softfloat/softfloat.c $(MUSA)/m68kdasm.c
-MUSAINC=-DMUSASHI_CNF=\"../../include/m68kconf.h\"
+MUSAINC=-DMUSASHI_CNF=\"../../include/m68kconf-emu68k.h\"
 
 CFLAGS=-g -Iinclude -Wall -Wfatal-errors -std=c99 $(shell pkg-config --cflags expat gmodule-2.0)
 CFLAGS+=-g -I ../raylib/src $(MUSAINC)
@@ -29,21 +29,19 @@ A68K=support/a68k/A68k
 SREC=support/srec/srec2bin
 
 .PHONY: all
-all: asm emu68k plugins
+all: $(MUSA)/m68kmake emu68k plugins asm
 
 .PHONY: asm
 asm: $(ASMb)
 
 
-emu68k: $(OBJ) $(MUSAOBJ)
+emu68k: $(MUSA)/m68kmake $(OBJ) $(MUSAOBJ)
 	$(CC) $(MUSAOBJ) $(OBJ) -o emu68k $(LDFLAGS)
 
-$(MUSAOBJ): m68kmake
-
-m68kmake:
-	gcc -o $(MUSA)/m68kmake $(MUSA)/m68kmake.c
+$(MUSA)/m68kmake:
+	gcc $(MUSAINC) -o $(MUSA)/m68kmake $(MUSA)/m68kmake.c
 	cd $(MUSA) && ./m68kmake
-
+	
 $(OBJ): obj/%.o : src/%.c
 	$(CC) $(INC) $(CFLAGS) -c $< -o $@
 	
@@ -66,7 +64,10 @@ clean:
 	rm -rf asm-src/*.s
 	rm -rf plugins/*.so
 	rm -rf $(MUSA)/*.o
-	
+	rm -rf $(MUSA)/softfloat/*.o	
 
+cleanMus: clean
+	rm -rf $(MUSA)/m68kops.*
+	rm -rf $(MUSA)/m68kmake
 	
 
