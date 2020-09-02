@@ -1,4 +1,4 @@
-                                                        asm-src/machine1test1.asm        Page 1
+                                                        target/asm/machine1test1.asm        Page 1
 
 68000 Assembler - version 2.71.F3w (Jul 27, 2006)
 Copyright 1985 by Brian R. Anderson.
@@ -47,6 +47,6 @@ AmigaDOS conversion copyright 1991 by Charlie Gibbs.
 000446                               40  end
 
 End of assembly - no errors were found.
-Heap usage:  -w4095,116
+Heap usage:  -w4095,120
 Total hunk sizes:  448 code, 0 data, 0 BSS
 

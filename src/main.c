@@ -3,6 +3,7 @@
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <strings.h>
 #include <glib.h>
 #include "raylib.h"
 #include "plugin.h"
@@ -88,7 +89,8 @@ void make_hex(char* buff, unsigned int pc, unsigned int length) {
 
   for(;length>0;length -= 2)
   {
-    sprintf(ptr, "%04X", mem[pc]<<8 | mem[pc+1]);
+    if (pc>RAMSIZE) {sprintf(ptr, "XX"); } else { sprintf(ptr, "%02X", mem[pc]<<8); }
+    if (pc+1>RAMSIZE) {sprintf(ptr+2, "XX"); } else { sprintf(ptr+2, "%02X", mem[pc+1]); }
     pc += 2;
     ptr += 4;
     if(length > 2)
@@ -207,12 +209,20 @@ int main(int argc, char* argv[])
     printf("Unable to open %s\n", argv[2]);
     exit(-1);
   }
-
-  if(fread(mem, 1, RAMSIZE, fhandle) <= 0) {
-    printf("Error reading %s", argv[2]);
-    exit(-1);
-  }
   
+  char *ext = strrchr(argv[2], '.');
+  printf("\n\n%s = %s\n\n",argv[2],ext);
+  if (strcasecmp(ext,".s")==0) {
+    printf("its a .s! TODO srec loader here...\n");
+    exit(0);
+  } else {
+
+    if(fread(mem, 1, RAMSIZE, fhandle) <= 0) {
+      printf("Error reading %s", argv[2]);
+      exit(-1);
+    }
+    fclose(fhandle);
+  }
 
   
   
@@ -358,7 +368,7 @@ int main(int argc, char* argv[])
       }
       
       // this should be a setting on or off and offset
-      memview = m68k_get_reg(NULL, M68K_REG_A7)-48;
+      //memview = m68k_get_reg(NULL, M68K_REG_A7)-48;
       
       
       for (int i=0; i<7; i++) {

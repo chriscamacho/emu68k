@@ -167,7 +167,7 @@ fl:
     
     cmp     #10,D6              ; 0-9 is okay
     blt     putAok
-    add.b   #7,D6               ; to get to a-f
+    add.b   #7+32,D6               ; to get to a-f
 putAok:
     add.b   #48,D6              ; make ascii
     move.b  D6,-(A3)            ; insert into message
@@ -192,6 +192,6 @@ insert:
 
 ; TODO incbin !
 ; path from the point of view of the makefile above...
-    include "./asm-src/fonts.inc"
+    include "./target/asm/fonts.inc"
 
 end:                            ; for stack location calculation

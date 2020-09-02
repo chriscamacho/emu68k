@@ -1,7 +1,7 @@
-asm-src/*.bin
-asm-src/*.s
-asm-src/*.lst
-asm-src/asc2char
+target/asm/*.bin
+target/asm/*.s
+target/asm/*.lst
+target/asm/asc2char
 emu68k
 obj/*.o
 plugins/*.so

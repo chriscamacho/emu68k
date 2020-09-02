@@ -2,4 +2,6 @@
 <machine name="machine1">
 	<plugin libName="flat12864" x="400" y="400" addressStart="0xA0000"/>
 	<plugin libName="VBL" x="100" y="400" addressStart="0xB0000"/>
+  <plugin libName="keyjoy" x="100" y="500" addressStart="0xC0000"/>
+  
 </machine>

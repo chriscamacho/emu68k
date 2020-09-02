@@ -90,14 +90,26 @@ G_MODULE_EXPORT int getAddressSize() { return 1024; }
 // we don't need to check it (a massive 1 K byte)
 G_MODULE_EXPORT byte getAddress(void* inst, int address) 
 {
-	//plugInstStruct* pl = (plugInstStruct*)inst;
-  //flat12864Vars* vars = ((flat12864Vars*)pl->data);
+  // pack 8 pixels back into a byte
+	plugInstStruct* pl = (plugInstStruct*)inst;
+  flat12864Vars* vars = ((flat12864Vars*)pl->data);
+  unsigned short a = address >> 3;
+  byte* p = (byte*)vars->screenImage.data;
+  byte t = 1;
+  byte b = 0;
+  for(int i=0;i<8;i++) {
+    if (p[a++]!=0) {
+      b = b + t;
+    }
+    t=t << 1;
+  }
 
-	return 0xff;
+	return b;
 }
 
 G_MODULE_EXPORT void setAddress(void* inst, int address, byte data) 
 {
+  // each bit effects a different pixel
 	plugInstStruct* pl = (plugInstStruct*)inst;
   flat12864Vars* vars = ((flat12864Vars*)pl->data); 
   byte* p = (byte*)vars->screenImage.data;

@@ -15,9 +15,9 @@ INC=-Iinclude -I$(MUSA) -I ../raylib/src
 SRC=$(wildcard src/*.c)
 OBJ=$(SRC:src/%.c=obj/%.o)
 
-ASM=$(wildcard asm-src/*.asm)
-ASMs=$(ASM:asm-src/%.asm=asm-src/%.s)
-ASMb=$(ASM:asm-src/%.asm=asm-src/%.bin)
+ASM=$(wildcard target/asm/*.asm)
+ASMs=$(ASM:target/asm/%.asm=target/asm/%.s)
+ASMb=$(ASM:target/asm/%.asm=target/asm/%.bin)
 
 PLUGSRC:= $(wildcard plug-src/*.c)
 PLUGS:= $(PLUGSRC:.c=.so)
@@ -45,10 +45,10 @@ $(MUSA)/m68kmake:
 $(OBJ): obj/%.o : src/%.c
 	$(CC) $(INC) $(CFLAGS) -c $< -o $@
 	
-$(ASMs): asm-src/%.s : asm-src/%.asm 
+$(ASMs): target/asm/%.s : target/asm/%.asm 
 	$(A68K) -l -s $<
 
-$(ASMb): asm-src/%.bin : asm-src/%.s 
+$(ASMb): target/asm/%.bin : target/asm/%.s 
 	$(SREC) -i $< -o $@
 
 plugins: $(PLUGDEST)
