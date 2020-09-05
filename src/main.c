@@ -32,8 +32,8 @@ uint8_t mem[RAMSIZE];
 //int stop = 0;
 uint32_t cycles = 0;
 uint32_t breakp = RAMSIZE; 
-char breakstr[10] = {0};
-bool breakedit = false;
+//char breakstr[10] = {0};
+//bool breakedit = false;
 
 unsigned int g_int_controller_pending = 0;      /* list of pending interrupts */
 unsigned int g_int_controller_highest_int = 0;  /* Highest pending interrupt */
@@ -274,13 +274,15 @@ int main(int argc, char* argv[])
   signed int memview = 0;
   
   GuiSetFont(font);
-  sprintf(breakstr,"%08X",breakp);
+  //sprintf(breakstr,"%08X",breakp);
   
-  GuiSetStyle(TEXTBOX,TEXT_COLOR_NORMAL, ColorToInt(WHITE));
-  GuiSetStyle(TEXTBOX,TEXT_COLOR_FOCUSED, ColorToInt(RED));
-  GuiSetStyle(TEXTBOX,TEXT_COLOR_PRESSED, ColorToInt(BLACK));
-  GuiSetStyle(TEXTBOX,TEXT_COLOR_PRESSED, ColorToInt(WHITE));
-  GuiSetStyle(TEXTBOX,BASE_COLOR_PRESSED, ColorToInt(BLACK));
+  GuiSetStyle(TEXTBOX, TEXT_COLOR_NORMAL, ColorToInt(WHITE));
+  GuiSetStyle(TEXTBOX, TEXT_COLOR_FOCUSED, ColorToInt(RED));
+  GuiSetStyle(TEXTBOX, TEXT_COLOR_PRESSED, ColorToInt(BLACK));
+  GuiSetStyle(TEXTBOX, TEXT_COLOR_PRESSED, ColorToInt(WHITE));
+  GuiSetStyle(TEXTBOX, BASE_COLOR_PRESSED, ColorToInt(BLACK));
+  GuiSetStyle(TEXTBOX, TEXT_INNER_PADDING, 0);
+//  GuiSetStyle(TEXTBOX, TEXT_ALIGNMENT, GUI_TEXT_ALIGN_CENTER);
 
   while(!WindowShouldClose()) {
 
@@ -405,11 +407,15 @@ int main(int argc, char* argv[])
         // then draw...
         pl->draw(p); // draw to the render texture
         DrawTextureRec(p->outTx.texture,(Rectangle){0, 0, p->size.x, -p->size.y },(Vector2){p->pos.x, p->pos.y}, WHITE);
-        DrawTextEx(font, FormatText("%s", p->name), (Vector2){ p->pos.x+2+p->size.x, p->pos.y-4 }, font.baseSize, 0, WHITE);
-        DrawTextEx(font, FormatText("%X", p->addressStart), (Vector2){ p->pos.x+2+p->size.x, p->pos.y+14 }, font.baseSize, 0, WHITE);
+        if (p->addressStart==0){
+          DrawTextEx(font, FormatText("%s", p->name), (Vector2){ p->pos.x+p->size.x-30, p->pos.y+p->size.y/2-font.baseSize/2 }, font.baseSize, 0, WHITE);
+        } else {
+          DrawTextEx(font, FormatText("%s", p->name), (Vector2){ p->pos.x+2+p->size.x, p->pos.y-4 }, font.baseSize, 0, WHITE);
+          DrawTextEx(font, FormatText("%X", p->addressStart), (Vector2){ p->pos.x+2+p->size.x, p->pos.y+14 }, font.baseSize, 0, WHITE);
+        }
       }
     }
-
+/*
                               // break point gadget TODO make into a plugin
                               if ( GuiTextBox((Rectangle){70,600,92,18}, breakstr, 9, breakedit) ) {
                                 breakedit=!breakedit;
@@ -420,7 +426,7 @@ int main(int argc, char* argv[])
                                 }
                               }
                               DrawTextEx(font, "BREAK @", (Vector2){ 2, 598 }, font.baseSize, 0, WHITE);
-    
+*/    
     EndDrawing();
     //----------------------------------------------------------------------------------
   }
@@ -456,7 +462,7 @@ void dobreak(unsigned int pc) {
       emuRun = false;
       emuSkip = false;
       m68k_end_timeslice();  
-      snprintf(nextlog(),80,"Step %08X :  break at %08X", cycles, pc);
+      snprintf(nextlog(),80,"Cycl %08X :  break at %08X", cycles, pc);
 }
 
 static void pc_callback(unsigned int new_pc) {
@@ -498,7 +504,7 @@ unsigned int m68k_read_memory_8(unsigned int address)
         return pl->getAddress(p, address);
       }
     }    
-    snprintf(nextlog(),80,"Step %08X : 8 bit read at %08X, %02X", cycles, address, mem[address]);
+    snprintf(nextlog(),80,"Cycl %08X : 8 bit read at %08X, %02X", cycles, address, mem[address]);
     return mem[address];
   }
   snprintf(nextlog(),80,"TODO bus error, access not handled %08X",address);
@@ -509,7 +515,7 @@ unsigned int m68k_read_memory_8(unsigned int address)
 unsigned int m68k_read_memory_16(unsigned int address) 
 {
   if (address < RAMSIZE-1) {
-    snprintf(nextlog(),80,"Step %08X : 16 bit read at %08X, %04X", cycles, address, mem[address]<<8 | mem[address+1]);
+    snprintf(nextlog(),80,"Cycl %08X : 16 bit read at %08X, %04X", cycles, address, mem[address]<<8 | mem[address+1]);
     return mem[address]<<8 | mem[address+1];
   }
   snprintf(nextlog(),80,"TODO bus error, access not handled %08X",address);
@@ -520,7 +526,7 @@ unsigned int m68k_read_memory_16(unsigned int address)
 unsigned int m68k_read_memory_32(unsigned int address) 
 {
   if (address < RAMSIZE-3) {
-    snprintf(nextlog(),80,"Step %08X : 32 bit read at %08X, %08X", cycles, address, mem[address]<<24 | mem[address+1]<<16 | mem[address+2]<<8 | mem[address+3]);
+    snprintf(nextlog(),80,"Cycl %08X : 32 bit read at %08X, %08X", cycles, address, mem[address]<<24 | mem[address+1]<<16 | mem[address+2]<<8 | mem[address+3]);
     return mem[address]<<24 | mem[address+1]<<16 | mem[address+2]<<8 | mem[address+3];
   }
   snprintf(nextlog(),80,"TODO bus error, access not handled %08X",address);
@@ -533,7 +539,7 @@ void m68k_write_memory_8(unsigned int address, unsigned int value)
   if (address < RAMSIZE) {
     mem[address] = value & 0xff;
 
-    snprintf(nextlog(),80,"Step %08X : 8 bit write at %08X, %02X\n", cycles, address, mem[address]);
+    snprintf(nextlog(),80,"Cycl %08X : 8 bit write at %08X, %02X\n", cycles, address, mem[address]);
     
     for (GList* l = plugins; l != NULL; l = l->next) {
       plugInstStruct* p = (plugInstStruct*)l->data;
@@ -555,7 +561,7 @@ void m68k_write_memory_16(unsigned int address, unsigned int value)
   if (address < RAMSIZE-1) {
     mem[address]   = (value>>8) & 0xff;
     mem[address+1] = (value)    & 0xff;
-    snprintf(nextlog(),80,"Step %08X : 16 bit write at %08X, %04X", cycles, address, value&0xffff);
+    snprintf(nextlog(),80,"Cycl %08X : 16 bit write at %08X, %04X", cycles, address, value&0xffff);
   } else {
     snprintf(nextlog(),80,"TODO bus error, access not handled %08X",address);
   }
@@ -569,7 +575,7 @@ void m68k_write_memory_32(unsigned int address, unsigned int value)
     mem[address+1] = (value>>16) & 0xff;
     mem[address+2] = (value>>8)  & 0xff;
     mem[address+3] = (value)     & 0xff;
-    snprintf(nextlog(),80,"Step %08X : 32 bit write at %08X, %08X", cycles, address, value&0xffffffff);
+    snprintf(nextlog(),80,"Cycl %08X : 32 bit write at %08X, %08X", cycles, address, value&0xffffffff);
   } else {
     snprintf(nextlog(),80,"TODO bus error, access not handled %08X",address);
   }
