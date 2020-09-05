@@ -1,11 +1,16 @@
 #include "m68k.h"
+#include "m68kcpu.h"
 
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <strings.h>
 #include <glib.h>
+
+#define RAYGUI_IMPLEMENTATION
+#include "raygui.h"
 #include "raylib.h"
+
 #include "plugin.h"
 
 #define screenWidth 1280
@@ -14,24 +19,32 @@
 /*
  TODO still very work in progress !
  some code needs seperating out into different units...
+ UI going into plugins...
  */
 
 
-void cpu_instr_callback();
+static void cpu_instr_callback(unsigned int pc);
+static void pc_callback(unsigned int new_pc);
 
 #define RAMSIZE 1024*1024
 
 uint8_t mem[RAMSIZE];
-int stop = 0;
-static uint32_t cycles = 0;
+//int stop = 0;
+uint32_t cycles = 0;
+uint32_t breakp = RAMSIZE; 
+char breakstr[10] = {0};
+bool breakedit = false;
 
 unsigned int g_int_controller_pending = 0;      /* list of pending interrupts */
 unsigned int g_int_controller_highest_int = 0;  /* Highest pending interrupt */
 char statstr[81] = {0};
-char readstr[6][81] = {{0},{0},{0},{0},{0},{0}};
-char *readptr[6] = { readstr[0], readstr[1], readstr[2], readstr[3], readstr[4], readstr[5] };
+char readstr[12][81] = {{0},{0},{0},{0},{0},{0},{0},{0},{0},{0},{0},{0}};
+char *readptr[12] = { readstr[0], readstr[1], readstr[2], readstr[3], readstr[4],
+                      readstr[5], readstr[6], readstr[7], readstr[8], readstr[9],
+                      readstr[10], readstr[11],};
 Font font; // UI font global so xml parser can see it... (TODO do something clever with user data pointer?)
 
+// TODO single variable with enums
 bool emuStep = false; // single step flag;
 bool emuRun = false; // run as fast as possible
 bool emuSkip = false; // skips 1 instruction (steps over without executing)
@@ -230,15 +243,15 @@ int main(int argc, char* argv[])
   m68k_init();
   m68k_set_cpu_type(M68K_CPU_TYPE_68000);
   m68k_set_instr_hook_callback(cpu_instr_callback);
+  m68k_set_pc_changed_callback(pc_callback);
   m68k_pulse_reset();
   
   InitWindow(screenWidth, screenHeight, "Emu68k");
   SetTargetFPS(60);
 
+  font = LoadFontEx("resources/SpaceMono-Bold.ttf", 22, 0, 250);
 
-  font = LoadFontEx("resources/SpaceMono-Bold.ttf", 24, 0, 250);
-  
-  
+
   
   // XML machine loader
   
@@ -259,8 +272,17 @@ int main(int argc, char* argv[])
   g_free (content);
   
   signed int memview = 0;
+  
+  GuiSetFont(font);
+  sprintf(breakstr,"%08X",breakp);
+  
+  GuiSetStyle(TEXTBOX,TEXT_COLOR_NORMAL, ColorToInt(WHITE));
+  GuiSetStyle(TEXTBOX,TEXT_COLOR_FOCUSED, ColorToInt(RED));
+  GuiSetStyle(TEXTBOX,TEXT_COLOR_PRESSED, ColorToInt(BLACK));
+  GuiSetStyle(TEXTBOX,TEXT_COLOR_PRESSED, ColorToInt(WHITE));
+  GuiSetStyle(TEXTBOX,BASE_COLOR_PRESSED, ColorToInt(BLACK));
 
-  while(!stop && !WindowShouldClose()) {
+  while(!WindowShouldClose()) {
 
     /* TODO this needs to go in a seperate thread
      * with mutex to block emulation while UI
@@ -275,18 +297,15 @@ int main(int argc, char* argv[])
           m68k_set_reg(M68K_REG_PC,pc);
           emuSkip = false;
         } else {
-          // 1 cycle tips it over to execute the next instruction...
+          // 1 cycle tips it over to execute the next instruction...?
           m68k_execute(1);
-          cycles++;
         }
         emuStep = false;
       } else {
         
-        //7.09002mhz = 118167.0 cycles per 60th/second
- 
-        m68k_execute(118166);
-        m68k_execute(1); // TODO work-a-round for pc display not updating ???
-        cycles+=118167;
+        //7.09002mhz = 118167.0 cycles per 60th/second 
+        m68k_execute(118167);
+
         
       }
     }
@@ -318,14 +337,8 @@ int main(int argc, char* argv[])
       emuSkip = false;
       emuStep = false;
     }
-    if (IsKeyPressed(KEY_PAGE_DOWN)) {
-      memview+=16*8;
-      if (memview>RAMSIZE-16*8) memview=0;
-    }
-    if (IsKeyPressed(KEY_PAGE_UP)) {
-      memview-=16*8;
-      if (memview<0) memview=RAMSIZE-16*8;
-    }
+    
+
     
 
     DrawFPS(0, 0);
@@ -334,13 +347,15 @@ int main(int argc, char* argv[])
     static char buff2[100];
     static unsigned int pc;
     static unsigned int instr_size;
+    
+
 
 
     for (int i=0; i<8; i++) {
       unsigned int reg = m68k_get_reg(NULL, M68K_REG_D0+i);
-      DrawTextEx(font, FormatText("D%i %08X ",i,reg), (Vector2){ 20, 20+i*20 }, font.baseSize, 2, WHITE);
+      DrawTextEx(font, FormatText("D%i %08X ",i,reg), (Vector2){ 20, 20+i*20 }, font.baseSize, 0, WHITE);
       reg = m68k_get_reg(NULL, M68K_REG_A0+i);
-      DrawTextEx(font, FormatText("A%i %08X ",i,reg), (Vector2){ 200, 20+i*20 }, font.baseSize, 2, WHITE);
+      DrawTextEx(font, FormatText("A%i %08X ",i,reg), (Vector2){ 200, 20+i*20 }, font.baseSize, 0, WHITE);
 
     }
     
@@ -349,34 +364,34 @@ int main(int argc, char* argv[])
     if (pc > RAMSIZE) {
       // assuming all plugins are inside ram range for now...
       m68k_pulse_bus_error();
-      DrawTextEx(font, FormatText("PC>%08X: ", pc), (Vector2){ 360, 40 }, font.baseSize, 2, RED);
+      DrawTextEx(font, FormatText("PC>%08X: ", pc), (Vector2){ 360, 40 }, font.baseSize, 0, RED);
     } else {
       instr_size = m68k_disassemble(buff, pc, M68K_CPU_TYPE_68000);
       make_hex(buff2, pc, instr_size);
-      DrawTextEx(font, FormatText("PC>%08X: %-16s: %s", pc, buff2, buff), (Vector2){ 360, 40 }, font.baseSize, 2, WHITE);
+      DrawTextEx(font, FormatText("PC>%08X: %-16s: %s", pc, buff2, buff), (Vector2){ 360, 40 }, font.baseSize, 0, WHITE);
 
       for (int i=0;i<5;i++) {
         pc += instr_size;
         instr_size = m68k_disassemble(buff, pc, M68K_CPU_TYPE_68000);
         make_hex(buff2, pc, instr_size);
-        DrawTextEx(font, FormatText("   %08X: %-16s: %s", pc, buff2, buff), (Vector2){ 360, 60+i*20 }, font.baseSize, 2, WHITE);
+        DrawTextEx(font, FormatText("   %08X: %-16s: %s", pc, buff2, buff), (Vector2){ 360, 60+i*20 }, font.baseSize, 0, WHITE);
       }
-      DrawTextEx(font, "- Recent memory activity -", (Vector2){ 120, 200 }, font.baseSize, 2, WHITE);
-      DrawTextEx(font, FormatText(">%s", statstr), (Vector2){ 20, 220 }, font.baseSize, 2, WHITE);
-      for (int i=0;i<6;i++) {
-        DrawTextEx(font, FormatText("%s", readptr[i]), (Vector2){ 20, 260+i*20 }, font.baseSize, 2, WHITE);
+      DrawTextEx(font, "- Recent memory activity -", (Vector2){ 120, 200 }, font.baseSize, 0, WHITE);
+      DrawTextEx(font, FormatText(">%s", statstr), (Vector2){ 20, 220 }, font.baseSize, 0, WHITE);
+      for (int i=0;i<12;i++) {
+        DrawTextEx(font, FormatText("%s", readptr[i]), (Vector2){ 20, 260+i*20 }, font.baseSize, 0, WHITE);
       }
       
       // this should be a setting on or off and offset
-      //memview = m68k_get_reg(NULL, M68K_REG_A7)-48;
+      memview = m68k_get_reg(NULL, M68K_REG_A7)-48;
       
       
       for (int i=0; i<7; i++) {
-        DrawTextEx(font, FormatText("%08X :", memview+i*16), (Vector2){ 600, 200+i*20 }, font.baseSize, 2, WHITE);
+        DrawTextEx(font, FormatText("%08X :", memview+i*16), (Vector2){ 600, 200+i*20 }, font.baseSize, 0, WHITE);
         make_hex(buff2, memview+i*16, 16);
         Color c = WHITE;
         if (i==3) c = YELLOW;
-        DrawTextEx(font, FormatText("%s", buff2), (Vector2){ 720, 200+i*20 }, font.baseSize, 2, c);
+        DrawTextEx(font, FormatText("%s", buff2), (Vector2){ 720, 200+i*20 }, font.baseSize, 0, c);
       }
 
       
@@ -390,10 +405,21 @@ int main(int argc, char* argv[])
         // then draw...
         pl->draw(p); // draw to the render texture
         DrawTextureRec(p->outTx.texture,(Rectangle){0, 0, p->size.x, -p->size.y },(Vector2){p->pos.x, p->pos.y}, WHITE);
-        DrawTextEx(font, FormatText("%s", p->name), (Vector2){ p->pos.x+2+p->size.x, p->pos.y-4 }, font.baseSize, 2, WHITE);
-        DrawTextEx(font, FormatText("%X", p->addressStart), (Vector2){ p->pos.x+2+p->size.x, p->pos.y+14 }, font.baseSize, 2, WHITE);
+        DrawTextEx(font, FormatText("%s", p->name), (Vector2){ p->pos.x+2+p->size.x, p->pos.y-4 }, font.baseSize, 0, WHITE);
+        DrawTextEx(font, FormatText("%X", p->addressStart), (Vector2){ p->pos.x+2+p->size.x, p->pos.y+14 }, font.baseSize, 0, WHITE);
       }
     }
+
+                              // break point gadget TODO make into a plugin
+                              if ( GuiTextBox((Rectangle){70,600,92,18}, breakstr, 9, breakedit) ) {
+                                breakedit=!breakedit;
+                                if (!breakedit) {
+                                  // TODO str2hex
+                                  breakp = strtoul(breakstr, NULL, 16); //  well that was easy!
+                                  sprintf(breakstr,"%08X",breakp);
+                                }
+                              }
+                              DrawTextEx(font, "BREAK @", (Vector2){ 2, 598 }, font.baseSize, 0, WHITE);
     
     EndDrawing();
     //----------------------------------------------------------------------------------
@@ -405,10 +431,49 @@ int main(int argc, char* argv[])
 }
 
 
-void cpu_instr_callback() {
-  unsigned int pc = m68k_get_reg(NULL, M68K_REG_PC);
-  // explicitly check for the stop instruction!
-  if (mem[pc]==0x4e && mem[pc+1]==0x72) stop = 1;
+// rotates the pointers so as to give a scrolling list...
+char* nextlog()
+{
+  char* tmp = readptr[11];
+  readptr[11] = readptr[10];
+  readptr[10] = readptr[9];
+  readptr[9] = readptr[8];
+  readptr[8] = readptr[7];
+  readptr[7] = readptr[6];
+  readptr[6] = readptr[5];
+  readptr[5] = readptr[4];
+  readptr[4] = readptr[3];
+  readptr[3] = readptr[2];
+  readptr[2] = readptr[1];
+  readptr[1] = readptr[0];
+  readptr[0] = tmp;
+
+  return readptr[0]; // just so it can be a printf param...
+}
+
+void dobreak(unsigned int pc) {
+      emuStep = false;
+      emuRun = false;
+      emuSkip = false;
+      m68k_end_timeslice();  
+      snprintf(nextlog(),80,"Step %08X :  break at %08X", cycles, pc);
+}
+
+static void pc_callback(unsigned int new_pc) {
+    if (new_pc == breakp) {
+      dobreak(new_pc);
+    }
+}
+
+void cpu_instr_callback(unsigned int pc) {
+  char scratch[100];
+  unsigned int i=m68k_disassemble(scratch, pc, M68K_CPU_TYPE_68000); // break just before!
+  if (pc+i==breakp) {
+    dobreak(breakp);
+  }
+  cycles += CYC_INSTRUCTION[REG_IR];
+
+  
 }
 
 unsigned int m68k_read_disassembler_16(unsigned int address) {
@@ -418,25 +483,7 @@ unsigned int m68k_read_disassembler_32(unsigned int address) {
   return mem[address]<<24 | mem[address+1]<<16 | mem[address+2]<<8 | mem[address+3];
 }
 
-char dummy[81]={0};
-// rotates the pointers so as to give a scrolling list...
-char* nextlog()
-{
-  char* tmp = readptr[5];
-  readptr[5] = readptr[4];
-  readptr[4] = readptr[3];
-  readptr[3] = readptr[2];
-  readptr[2] = readptr[1];
-  readptr[1] = readptr[0];
-  readptr[0] = tmp;
-  
-  if (emuRun) {
-    return dummy;
-  } else {
-    return readptr[0];
-  }
 
-}
 
 
 unsigned int m68k_read_memory_8(unsigned int address) 
@@ -458,6 +505,7 @@ unsigned int m68k_read_memory_8(unsigned int address)
   return 0xff;
 }
 
+// TODO plugin ranges
 unsigned int m68k_read_memory_16(unsigned int address) 
 {
   if (address < RAMSIZE-1) {
@@ -468,6 +516,7 @@ unsigned int m68k_read_memory_16(unsigned int address)
   return 0xffff;
 }
 
+// TODO plugin ranges
 unsigned int m68k_read_memory_32(unsigned int address) 
 {
   if (address < RAMSIZE-3) {
@@ -479,11 +528,12 @@ unsigned int m68k_read_memory_32(unsigned int address)
 }
 
 
-// potentially later not in same thread as UI, so can't draw stuff.....
 void m68k_write_memory_8(unsigned int address, unsigned int value) 
 {
   if (address < RAMSIZE) {
     mem[address] = value & 0xff;
+
+    snprintf(nextlog(),80,"Step %08X : 8 bit write at %08X, %02X\n", cycles, address, mem[address]);
     
     for (GList* l = plugins; l != NULL; l = l->next) {
       plugInstStruct* p = (plugInstStruct*)l->data;
@@ -494,23 +544,24 @@ void m68k_write_memory_8(unsigned int address, unsigned int value)
         return pl->setAddress(p, address, value);
       }
     } 
-    snprintf(statstr,80,"Step %08X : 8 bit write at %08X, %02X\n", cycles, address, mem[address]);
   } else {
     snprintf(nextlog(),80,"TODO bus error, access not handled %08X",address);
   }
 }
 
+// TODO plugin ranges
 void m68k_write_memory_16(unsigned int address, unsigned int value) 
 {
   if (address < RAMSIZE-1) {
     mem[address]   = (value>>8) & 0xff;
     mem[address+1] = (value)    & 0xff;
-    snprintf(statstr,80,"Step %08X : 16 bit write at %08X, %04X", cycles, address, value&0xffff);
+    snprintf(nextlog(),80,"Step %08X : 16 bit write at %08X, %04X", cycles, address, value&0xffff);
   } else {
     snprintf(nextlog(),80,"TODO bus error, access not handled %08X",address);
   }
 }
 
+// TODO plugin ranges
 void m68k_write_memory_32(unsigned int address, unsigned int value) 
 {
   if (address < RAMSIZE-3) {
@@ -518,7 +569,7 @@ void m68k_write_memory_32(unsigned int address, unsigned int value)
     mem[address+1] = (value>>16) & 0xff;
     mem[address+2] = (value>>8)  & 0xff;
     mem[address+3] = (value)     & 0xff;
-    snprintf(statstr,80,"Step %08X : 32 bit write at %08X, %08X", cycles, address, value&0xffffffff);
+    snprintf(nextlog(),80,"Step %08X : 32 bit write at %08X, %08X", cycles, address, value&0xffffffff);
   } else {
     snprintf(nextlog(),80,"TODO bus error, access not handled %08X",address);
   }

@@ -1,25 +1,22 @@
-    dc.l    end+1024            ; start up SP
+    dc.l    end+1024        ; start up SP
     dc.l    start           ; start up PC
 
 ; worm!
-
-FBUF    EQU   $A0000    ; memory mapped hw devices
-VBL     EQU   $B0000
-JOY     EQU   $C0000
+                            ; memory mapped hw devices
+FBUF    EQU   $A0000        ; 128x64x1
+VBL     EQU   $B0000        ; byte counter
+JOY     EQU   $C0000        ; keyboard joystick
 
     
     rorg     $400
     
-    ; variables
-frame:
-    dc.l      0
-score:
-    dc.b      0,0
-scoreInc:
-    dc.b      0,1
 
-    even
 start:
+    nop
+    nop
+    nop
+    nop
+    bra       start
 
     addq.l    #1,(frame)        ; increment the frame counter
 
@@ -35,10 +32,7 @@ start:
 
 
     jsr       print4            ; print the modified message
-    
- 
-
-       
+  
     
     move.l    #score+2,A0
     move.l    #scoreInc+2,A1
@@ -49,14 +43,30 @@ start:
     moveq     #0,D0
     move.w    (score),D0
     moveq.l   #3,D1
-    jsr       putA
+    jsr       putA              ; put score value in string
     
     move.l    #scoreMess,A0
     moveq     #1,D0
     moveq     #56,D1
-    jsr       print4
+    jsr       print4            ; print it
     
 
+    moveq     #1,d2
+lineLoop:
+    move.b    d2,(posx)
+    move.b    d2,(posy)
+    moveq     #0,d0
+    moveq     #0,d1
+    move.b    (posx),d0
+    move.b    (posy),d1
+    jsr       plot
+    
+    add.b     #1,d2
+    cmp.b     #32,d2
+    blt       lineLoop
+    
+    
+    
 
 ; bottom of main loop wait for "vbl", clear screen
 
@@ -91,7 +101,7 @@ clsloop:
 ;   D1    the number of nibbles required - 1
 
 putA:
-
+    move.l    d2,-(sp)
 fl:
     move.l    D0,D2
     and.l     #$f,D2            ; isolate next nibble
@@ -106,6 +116,7 @@ putAok:
     lsr.l     #4,D0             ; next nibble
     dbra      D1,fl
 
+    move.l    (sp)+,d2
     rts
 
 ;
@@ -208,91 +219,36 @@ donePrint4:
     movem.l   (sp)+,d3-d6/a1-a2 
     rts
     
-;print4:
-;    movem.l   d2-d4/a1-a2,-(A7)
-;    
-;    move.l    A0,A2
-;    move.l    #FBUF,A0
-;    move.l    #font4x8,A1
-;    lsl.w     #1,D0
-;    lsl.w     #4,D1
-;    add.w     D1,D0             ; screen offset in D0
-;    
-;print4loop:
-;    moveq     #0,D1
- ;   move.b    (A2)+,D1          ; D1 next char to print
-;    cmp.b     #0,D1             ; is it a zero character
-;    beq.w     donePrint4       ; if so message complete!
-;    sub.b     #32,D1            ; char data starts at ascii 32
-;    lsl.w     #3,D1             ; 8 lines per char
-;    moveq     #0,D2
-;    move.b    (A2)+,D2          ; 2nd char of pair
-;    cmp.b      #0,D2
-;    bne.s     print42ok
-;    move.b    #32,D2            ; D2 is second char in pain
-;print42ok:
-;    sub.b     #32,D2            ; char data starts at ascii 32
-;    lsl.w     #3,D2             ; 8 lines per char
-    
-    
-;    move.b    0(A1,D1.w),D3     ; left of pair
-;    move.b    0(A1,D2.w),D4     ; right of pair
-;    lsl.b     #4,D3
-;    or.b      D3,D4
-;    or.b    D4,0(A0,D0.w)
-;    
-;    move.b    1(A1,D1.w),D3     ; left of pair
-;    move.b    1(A1,D2.w),D4     ; right of pair
-;    lsl.b     #4,D3
-;    or.b      D3,D4
-;    or.b    D4,16(A0,D0.w)
-;    
-;    move.b    2(A1,D1.w),D3     ; left of pair
-;    move.b    2(A1,D2.w),D4     ; right of pair
-;    lsl.b     #4,D3
-;    or.b      D3,D4
-;    or.b    D4,32(A0,D0.w)
-;    
-;    move.b    3(A1,D1.w),D3     ; left of pair
-;    move.b    3(A1,D2.w),D4     ; right of pair
-;    lsl.b     #4,D3
-;    or.b      D3,D4
-;    or.b    D4,48(A0,D0.w)
-;    
-;    move.b    4(A1,D1.w),D3     ; left of pair
-;    move.b    4(A1,D2.w),D4     ; right of pair
-;    lsl.b     #4,D3
-;    or.b      D3,D4
-;    or.b    D4,64(A0,D0.w)
-;    
-;    move.b    5(A1,D1.w),D3     ; left of pair
-;    move.b    5(A1,D2.w),D4     ; right of pair
-;    lsl.b     #4,D3
-;    or.b      D3,D4
-;    or.b    D4,80(A0,D0.w)
-    
-;    move.b    6(A1,D1.w),D3     ; left of pair
-;    move.b    6(A1,D2.w),D4     ; right of pair
-;    lsl.b     #4,D3
-;    or.b      D3,D4
-;    or.b    D4,96(A0,D0.w)
-;    
-;    move.b    7(A1,D1.w),D3     ; left of pair
-;    move.b    7(A1,D2.w),D4     ; right of pair
-;    lsl.b     #4,D3             
-;    or.b      D3,D4
-;    or.b    D4,112(A0,D0.w)
+plot:
+    movem.l   d2-d4/a0,-(sp)
+    move.l    #FBUF,A0
+    moveq     #0,d2
+    move.b    d0,d2
+    and.b     #7,d2
+    move.l    #128,d3
+    lsr.b     d2,d3
+    lsr.b     #3,d0
+    lsl.w     #4,d1
+    add.w     d1,d0
+    or.b      d3,0(a0,d0)
+    movem.l   (sp)+,d2-d4/a0
+    rts
 
-    
-;    add.l     #1,D0 ; destination offset
 
-;    bra.w     print4loop
-;donePrint4:
-
-;    movem.l   (A7)+,d2-d4/a1-a2
+    ; variables
+frame:
+    dc.l      0
+score:
+    dc.w      0
+scoreInc:
+    dc.w      1
+posx:
+    dc.b      3
+posy:
+    dc.b      4
     
-;    rts
-    
+    even
+        
 scoreMess:
     dc.b    "Score:"
 scoreInsert:

@@ -46,7 +46,7 @@ $(OBJ): obj/%.o : src/%.c
 	$(CC) $(INC) $(CFLAGS) -c $< -o $@
 	
 $(ASMs): target/asm/%.s : target/asm/%.asm 
-	$(A68K) -l -s $<
+	$(A68K) -n -l -s $<
 
 $(ASMb): target/asm/%.bin : target/asm/%.s 
 	$(SREC) -i $< -o $@
