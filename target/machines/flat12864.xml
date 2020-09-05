@@ -3,6 +3,7 @@
 	<plugin libName="flat12864" x="600" y="400" addressStart="0xA0000"/>
 	<plugin libName="VBL" x="2" y="400" addressStart="0xB0000"/>
   <plugin libName="keyjoy" x="2" y="500" addressStart="0xC0000"/>
-  <plugin libName="break" x="2" y="600" addressStart="0x0"/>
+  <plugin libName="break" x="32" y="680" addressStart="0x0"/>
+  <plugin libName="RunStepSkip" x="264" y="680" addressStart="0x0"/>
   
 </machine>

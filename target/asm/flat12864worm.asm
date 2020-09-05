@@ -16,6 +16,18 @@ start:
     nop
     nop
     nop
+    add     #1,d1
+    bra     start
+    
+    add     #3,d0
+loop:
+    nop
+    add     #1,d1
+    nop
+    dbra      d0,loop
+    
+    nop
+    nop
     bra       start
 
     addq.l    #1,(frame)        ; increment the frame counter

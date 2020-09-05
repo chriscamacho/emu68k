@@ -1,0 +1,16 @@
+--- ../../Musashi/m68kcpu.h	2020-08-29 16:08:40.315118970 +0100
++++ support/Musashi/m68kcpu.h	2020-09-05 21:05:20.229177084 +0100
+@@ -1482,11 +1482,13 @@
+ static inline void m68ki_branch_8(uint offset)
+ {
+ 	REG_PC += MAKE_INT_8(offset);
++        m68ki_pc_changed(REG_PC);
+ }
+ 
+ static inline void m68ki_branch_16(uint offset)
+ {
+ 	REG_PC += MAKE_INT_16(offset);
++        m68ki_pc_changed(REG_PC);
+ }
+ 
+ static inline void m68ki_branch_32(uint offset)

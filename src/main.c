@@ -29,11 +29,9 @@ static void pc_callback(unsigned int new_pc);
 #define RAMSIZE 1024*1024
 
 uint8_t mem[RAMSIZE];
-//int stop = 0;
 uint32_t cycles = 0;
-uint32_t breakp = RAMSIZE; 
-//char breakstr[10] = {0};
-//bool breakedit = false;
+uint32_t breakp = 0; 
+
 
 unsigned int g_int_controller_pending = 0;      /* list of pending interrupts */
 unsigned int g_int_controller_highest_int = 0;  /* Highest pending interrupt */
@@ -111,7 +109,41 @@ void make_hex(char* buff, unsigned int pc, unsigned int length) {
   }
 }
 
+bool isRunning() {
+  return emuRun;
+}
 
+void setRunning(bool run) {
+  if (run) {
+    emuRun  = true;
+    emuStep = false;
+    emuSkip = false;    
+  } else {
+    emuRun  = false;
+    emuStep = false;
+    emuSkip = false;    
+  }
+}
+
+void doStep() {
+  emuRun  = false;
+  emuStep = true;
+  emuSkip = false;      
+}
+
+void doSkip() {
+  emuRun  = false;
+  emuStep = false;
+  emuSkip = true;    
+}
+
+    
+void setBreakPoint(unsigned int bp) {
+  breakp = bp;
+}
+
+
+// TODO get the xml loader into its own unit.
 pluginStruct* plug;
 plugInstStruct* plugin;
 
@@ -262,7 +294,6 @@ int main(int argc, char* argv[])
     exit(-1);
   }
   
-  //static GMarkupParser parser = { xml_start, xml_end, xml_element, NULL, xml_err };
   static GMarkupParser parser = { xml_start, NULL, NULL, NULL, xml_err };
   GMarkupParseContext *context;
   context = g_markup_parse_context_new (&parser, 0, NULL, NULL);
@@ -274,7 +305,6 @@ int main(int argc, char* argv[])
   signed int memview = 0;
   
   GuiSetFont(font);
-  //sprintf(breakstr,"%08X",breakp);
   
   GuiSetStyle(TEXTBOX, TEXT_COLOR_NORMAL, ColorToInt(WHITE));
   GuiSetStyle(TEXTBOX, TEXT_COLOR_FOCUSED, ColorToInt(RED));
@@ -285,6 +315,7 @@ int main(int argc, char* argv[])
 //  GuiSetStyle(TEXTBOX, TEXT_ALIGNMENT, GUI_TEXT_ALIGN_CENTER);
 
   while(!WindowShouldClose()) {
+printf("****************************\n");
 
     /* TODO this needs to go in a seperate thread
      * with mutex to block emulation while UI
@@ -307,51 +338,33 @@ int main(int argc, char* argv[])
         
         //7.09002mhz = 118167.0 cycles per 60th/second 
         m68k_execute(118167);
-
+        /*
+        m68k_execute(118159);
+        m68k_execute(1);  
+        m68k_execute(1);  
+        m68k_execute(1);  
+        m68k_execute(1);  
+        m68k_execute(1);  
+        m68k_execute(1);  
+        m68k_execute(1);  
+        m68k_execute(1);  */
         
       }
     }
 
 
-
     // Draw
-    // (this is where the emu thread should be blocked
-    // seems it wouldn't save much but the UI thread will be hanging
-    // around waiting for the frame to flip....)
-    // NB getting good emu speed on single core, low priotity
     //----------------------------------------------------------------------------------
     BeginDrawing();
 
     ClearBackground(DARKGREEN);
 
-    if (IsKeyPressed(KEY_SPACE)) {
-      emuStep = true;
-      emuRun = false;
-      emuSkip = false;
-    }
-    if (IsKeyPressed(KEY_S)) {
-      emuSkip = true;
-      emuStep = true;
-      emuRun = false;
-    }
-    if (IsKeyPressed(KEY_R)) {
-      emuRun = true;
-      emuSkip = false;
-      emuStep = false;
-    }
-    
-
-    
-
     DrawFPS(0, 0);
 
-    static char buff[100];
-    static char buff2[100];
-    static unsigned int pc;
-    static unsigned int instr_size;
-    
-
-
+    char buff[100];
+    char buff2[100];
+    unsigned int pc;
+    unsigned int instr_size;
 
     for (int i=0; i<8; i++) {
       unsigned int reg = m68k_get_reg(NULL, M68K_REG_D0+i);
@@ -361,7 +374,7 @@ int main(int argc, char* argv[])
 
     }
     
-    pc = m68k_get_reg(NULL, M68K_REG_PC);
+    pc = m68k_get_reg(NULL, M68K_REG_PPC);
     
     if (pc > RAMSIZE) {
       // assuming all plugins are inside ram range for now...
@@ -408,25 +421,14 @@ int main(int argc, char* argv[])
         pl->draw(p); // draw to the render texture
         DrawTextureRec(p->outTx.texture,(Rectangle){0, 0, p->size.x, -p->size.y },(Vector2){p->pos.x, p->pos.y}, WHITE);
         if (p->addressStart==0){
-          DrawTextEx(font, FormatText("%s", p->name), (Vector2){ p->pos.x+p->size.x-30, p->pos.y+p->size.y/2-font.baseSize/2 }, font.baseSize, 0, WHITE);
+          DrawTextEx(font, FormatText("%s", p->name), (Vector2){ p->pos.x+16, p->pos.y-font.baseSize }, font.baseSize, 0, WHITE);
         } else {
           DrawTextEx(font, FormatText("%s", p->name), (Vector2){ p->pos.x+2+p->size.x, p->pos.y-4 }, font.baseSize, 0, WHITE);
           DrawTextEx(font, FormatText("%X", p->addressStart), (Vector2){ p->pos.x+2+p->size.x, p->pos.y+14 }, font.baseSize, 0, WHITE);
         }
       }
     }
-/*
-                              // break point gadget TODO make into a plugin
-                              if ( GuiTextBox((Rectangle){70,600,92,18}, breakstr, 9, breakedit) ) {
-                                breakedit=!breakedit;
-                                if (!breakedit) {
-                                  // TODO str2hex
-                                  breakp = strtoul(breakstr, NULL, 16); //  well that was easy!
-                                  sprintf(breakstr,"%08X",breakp);
-                                }
-                              }
-                              DrawTextEx(font, "BREAK @", (Vector2){ 2, 598 }, font.baseSize, 0, WHITE);
-*/    
+ 
     EndDrawing();
     //----------------------------------------------------------------------------------
   }

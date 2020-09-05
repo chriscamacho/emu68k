@@ -1,0 +1,227 @@
+--- ../raygui/src/raygui.h	2020-09-04 20:33:49.527347916 +0100
++++ include/raygui.h	2020-09-05 15:17:22.574039478 +0100
+@@ -645,6 +645,21 @@
+ static Vector3 ConvertHSVtoRGB(Vector3 hsv);                    // Convert color data from HSV to RGB
+ static Vector3 ConvertRGBtoHSV(Vector3 rgb);                    // Convert color data from RGB to HSV
+ 
++Vector2 mouseOffset = { 0 };
++
++void setMouseOffset(float x, float y) {
++  mouseOffset.x = x;
++  mouseOffset.y = y;
++}
++
++Vector2 getRelelativeMousePosition() {
++  Vector2 mp = GetMousePosition();
++  mp.x -= mouseOffset.x;
++  mp.y -= mouseOffset.y;
++  return mp;
++}
++
++
+ //----------------------------------------------------------------------------------
+ // Gui Setup Functions Definition
+ //----------------------------------------------------------------------------------
+@@ -879,7 +894,7 @@
+     //--------------------------------------------------------------------
+     if ((state != GUI_STATE_DISABLED) && !guiLocked)
+     {
+-        Vector2 mousePoint = GetMousePosition();
++        Vector2 mousePoint = getRelelativeMousePosition();
+ 
+         // Check button state
+         if (CheckCollisionPointRec(mousePoint, bounds))
+@@ -979,7 +994,7 @@
+     //--------------------------------------------------------------------
+     if ((state != GUI_STATE_DISABLED) && !guiLocked)
+     {
+-        Vector2 mousePoint = GetMousePosition();
++        Vector2 mousePoint = getRelelativeMousePosition();
+ 
+         // Check button state
+         if (CheckCollisionPointRec(mousePoint, bounds))
+@@ -1015,7 +1030,7 @@
+     //--------------------------------------------------------------------
+     if ((state != GUI_STATE_DISABLED) && !guiLocked)
+     {
+-        Vector2 mousePoint = GetMousePosition();
++        Vector2 mousePoint = getRelelativeMousePosition();
+ 
+         // Check checkbox state
+         if (CheckCollisionPointRec(mousePoint, bounds))
+@@ -1052,7 +1067,7 @@
+     //--------------------------------------------------------------------
+     if ((state != GUI_STATE_DISABLED) && !guiLocked)
+     {
+-        Vector2 mousePoint = GetMousePosition();
++        Vector2 mousePoint = getRelelativeMousePosition();
+ 
+         // Check button state
+         if (CheckCollisionPointRec(mousePoint, bounds))
+@@ -1084,7 +1099,7 @@
+     //--------------------------------------------------------------------
+     if ((state != GUI_STATE_DISABLED) && !guiLocked)
+     {
+-        Vector2 mousePoint = GetMousePosition();
++        Vector2 mousePoint = getRelelativeMousePosition();
+ 
+         // Check toggle button state
+         if (CheckCollisionPointRec(mousePoint, bounds))
+@@ -1171,7 +1186,7 @@
+     //--------------------------------------------------------------------
+     if ((state != GUI_STATE_DISABLED) && !guiLocked)
+     {
+-        Vector2 mousePoint = GetMousePosition();
++        Vector2 mousePoint = getRelelativeMousePosition();
+ 
+         Rectangle totalBounds = {
+             (GuiGetStyle(CHECKBOX, TEXT_ALIGNMENT) == GUI_TEXT_ALIGN_LEFT)? textBounds.x : bounds.x,
+@@ -1231,7 +1246,7 @@
+     //--------------------------------------------------------------------
+     if ((state != GUI_STATE_DISABLED) && !guiLocked && (itemsCount > 1))
+     {
+-        Vector2 mousePoint = GetMousePosition();
++        Vector2 mousePoint = getRelelativeMousePosition();
+ 
+         if (CheckCollisionPointRec(mousePoint, bounds) ||
+             CheckCollisionPointRec(mousePoint, selector))
+@@ -1293,7 +1308,7 @@
+     //--------------------------------------------------------------------
+     if ((state != GUI_STATE_DISABLED) && !guiLocked && (itemsCount > 1))
+     {
+-        Vector2 mousePoint = GetMousePosition();
++        Vector2 mousePoint = getRelelativeMousePosition();
+ 
+         if (editMode)
+         {
+@@ -1398,16 +1413,16 @@
+ 
+     Rectangle cursor = {
+         bounds.x + GuiGetStyle(TEXTBOX, TEXT_PADDING) + GetTextWidth(text) + 2,
+-        bounds.y + bounds.height/2 - GuiGetStyle(DEFAULT, TEXT_SIZE),
++        bounds.y + bounds.height/2 - GuiGetStyle(DEFAULT, TEXT_SIZE)/2,
+         1,
+-        GuiGetStyle(DEFAULT, TEXT_SIZE)*2
++        GuiGetStyle(DEFAULT, TEXT_SIZE) //*2
+     };
+ 
+     // Update control
+     //--------------------------------------------------------------------
+     if ((state != GUI_STATE_DISABLED) && !guiLocked)
+     {
+-        Vector2 mousePoint = GetMousePosition();
++        Vector2 mousePoint = getRelelativeMousePosition();
+ 
+         if (editMode)
+         {
+@@ -1523,7 +1538,7 @@
+     //--------------------------------------------------------------------
+     if ((state != GUI_STATE_DISABLED) && !guiLocked)
+     {
+-        Vector2 mousePoint = GetMousePosition();
++        Vector2 mousePoint = getRelelativeMousePosition();
+ 
+         // Check spinner state
+         if (CheckCollisionPointRec(mousePoint, bounds))
+@@ -1601,7 +1616,7 @@
+     //--------------------------------------------------------------------
+     if ((state != GUI_STATE_DISABLED) && !guiLocked)
+     {
+-        Vector2 mousePoint = GetMousePosition();
++        Vector2 mousePoint = getRelelativeMousePosition();
+ 
+         bool valueHasChanged = false;
+ 
+@@ -1719,7 +1734,7 @@
+     //--------------------------------------------------------------------
+     if ((state != GUI_STATE_DISABLED) && !guiLocked)
+     {
+-        Vector2 mousePoint = GetMousePosition();
++        Vector2 mousePoint = getRelelativeMousePosition();
+ 
+         if (editMode)
+         {
+@@ -1858,7 +1873,7 @@
+     //--------------------------------------------------------------------
+     if ((state != GUI_STATE_DISABLED) && !guiLocked)
+     {
+-        Vector2 mousePoint = GetMousePosition();
++        Vector2 mousePoint = getRelelativeMousePosition();
+ 
+         if (CheckCollisionPointRec(mousePoint, bounds))
+         {
+@@ -2009,7 +2024,7 @@
+     //--------------------------------------------------------------------
+     if ((state != GUI_STATE_DISABLED) && !guiLocked)
+     {
+-        Vector2 mousePoint = GetMousePosition();
++        Vector2 mousePoint = getRelelativeMousePosition();
+ 
+         // Check button state
+         if (CheckCollisionPointRec(mousePoint, bounds))
+@@ -2078,7 +2093,7 @@
+     //--------------------------------------------------------------------
+     if ((state != GUI_STATE_DISABLED) && !guiLocked)
+     {
+-        Vector2 mousePoint = GetMousePosition();
++        Vector2 mousePoint = getRelelativeMousePosition();
+ 
+         if (CheckCollisionPointRec(mousePoint, bounds))
+         {
+@@ -2210,7 +2225,7 @@
+     //--------------------------------------------------------------------
+     if ((state != GUI_STATE_DISABLED) && !guiLocked)
+     {
+-        Vector2 mousePoint = GetMousePosition();
++        Vector2 mousePoint = getRelelativeMousePosition();
+ 
+         // Check mouse inside list view
+         if (CheckCollisionPointRec(mousePoint, bounds))
+@@ -2347,7 +2362,7 @@
+     //--------------------------------------------------------------------
+     if ((state != GUI_STATE_DISABLED) && !guiLocked)
+     {
+-        Vector2 mousePoint = GetMousePosition();
++        Vector2 mousePoint = getRelelativeMousePosition();
+ 
+         if (CheckCollisionPointRec(mousePoint, bounds))
+         {
+@@ -2419,7 +2434,7 @@
+     //--------------------------------------------------------------------
+     if ((state != GUI_STATE_DISABLED) && !guiLocked)
+     {
+-        Vector2 mousePoint = GetMousePosition();
++        Vector2 mousePoint = getRelelativeMousePosition();
+ 
+         if (CheckCollisionPointRec(mousePoint, bounds) ||
+             CheckCollisionPointRec(mousePoint, selector))
+@@ -2481,7 +2496,7 @@
+     //--------------------------------------------------------------------
+     if ((state != GUI_STATE_DISABLED) && !guiLocked)
+     {
+-        Vector2 mousePoint = GetMousePosition();
++        Vector2 mousePoint = getRelelativeMousePosition();
+ 
+         if (CheckCollisionPointRec(mousePoint, bounds) ||
+             CheckCollisionPointRec(mousePoint, selector))
+@@ -2694,7 +2709,7 @@
+     #endif
+ 
+     GuiControlState state = guiState;
+-    Vector2 mousePoint = GetMousePosition();
++    Vector2 mousePoint = getRelelativeMousePosition();
+     Vector2 currentCell = { -1, -1 };
+ 
+     int linesV = ((int)(bounds.width/spacing))*subdivs + 1;
+@@ -3357,9 +3372,9 @@
+ {
+     //static int tooltipFramesCounter = 0;  // Not possible gets reseted at second function call!
+ 
+-    if (guiTooltipEnabled && (guiTooltip != NULL) && CheckCollisionPointRec(GetMousePosition(), bounds))
++    if (guiTooltipEnabled && (guiTooltip != NULL) && CheckCollisionPointRec(getRelelativeMousePosition(), bounds))
+     {
+-        Vector2 mousePosition = GetMousePosition();
++        Vector2 mousePosition = getRelelativeMousePosition();
+         Vector2 textSize = MeasureTextEx(guiFont, guiTooltip, GuiGetStyle(DEFAULT, TEXT_SIZE), GuiGetStyle(DEFAULT, TEXT_SPACING));
+         Rectangle tooltipBounds = { mousePosition.x, mousePosition.y, textSize.x + 20, textSize.y*2 };
+ 
