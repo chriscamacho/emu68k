@@ -69,4 +69,4 @@ G_MODULE_EXPORT byte getAddress(void* inst, int address)
   VBLvars* vars = ((VBLvars*)pl->data); 
 	return vars->val;
 }
-G_MODULE_EXPORT void setAddress(void* inst, int address, byte data) {/* ignored TODO ??? WARN?*/  }
+G_MODULE_EXPORT void setAddress(void* inst, int address, byte data) {   }

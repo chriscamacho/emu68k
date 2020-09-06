@@ -17,7 +17,6 @@
   
 
 typedef struct {
-    char label[33];
     bool running;
 } rssVars;
 
@@ -32,29 +31,14 @@ G_MODULE_EXPORT void initialise(void* inst)
   pl->size = (Vector2){256,32};    // size is always the same for all instances
   pl->outTx = LoadRenderTexture(pl->size.x, pl->size.y);  // plugin should only draw on this
   
-  //dont need
-  //if (pl->plug->resTx.id==0) pl->plug->resTx = LoadTexture("resources/template.png");  // single resource
- 
   SetTextureFilter(pl->outTx.texture, FILTER_BILINEAR); 
-  //SetTextureFilter(pl->plug->resTx, FILTER_BILINEAR);  // Texture scale filter to use
 
   // clear out / initialize anything in vars like strings etc
   vars->running = false;
-  sprintf(pl->name,"Cpu Control");
-
 }
 
 
-G_MODULE_EXPORT void setProperty(void* inst, char* prop, void* value)
-{
-  plugInstStruct* pl = (plugInstStruct*)inst;
-  rssVars* vars = ((rssVars*)pl->data);
-
-  // TODO  -  store any labels etc in var 
-  // (input can only really be char* as that what the xml loader sends)
-  (void)pl;
-  (void)vars; // keep compiler happy about unused variables
-}
+G_MODULE_EXPORT void setProperty(void* inst, char* prop, void* value) { }
 
 // This function can access the UI
 G_MODULE_EXPORT void draw(void* inst) 
@@ -64,7 +48,6 @@ G_MODULE_EXPORT void draw(void* inst)
   rssVars* vars = ((rssVars*)pl->data);
   
   setMouseOffset(pl->pos.x, pl->pos.y);   // TODO caller sets this ?
-
   
   BeginTextureMode(pl->outTx);
     ClearBackground(BLANK);
@@ -100,25 +83,11 @@ G_MODULE_EXPORT void draw(void* inst)
 
 
 // The following functions cannot access the UI
-G_MODULE_EXPORT void clicked(void* inst, int x, int y) 
-{
-  //plugInstStruct* pl = (plugInstStruct*)inst;
-  //rssVars* vars = ((rssVars*)pl->data);
-
-}
+G_MODULE_EXPORT void clicked(void* inst, int x, int y) { }
 
 // TODO put in plugInstStruct set in initialise
-G_MODULE_EXPORT int getAddressSize() { return 0; }  // important signals gui plugin
+G_MODULE_EXPORT int getAddressSize() { return 0; }  // TODO important signals not memory mapped
 
-G_MODULE_EXPORT byte getAddress(void* inst, int address) 
-{
-//	plugInstStruct* pl = (plugInstStruct*)inst;
-//  rssVars* vars = ((rssVars*)pl->data); 
-	return 0xff;
-}
+G_MODULE_EXPORT byte getAddress(void* inst, int address) {	return 0xff; }
 
-G_MODULE_EXPORT void setAddress(void* inst, int address, byte data) 
-{
-//	plugInstStruct* pl = (plugInstStruct*)inst;
-//  rssVars* vars = ((rssVars*)pl->data); 
-}
+G_MODULE_EXPORT void setAddress(void* inst, int address, byte data) { }

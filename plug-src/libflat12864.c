@@ -47,16 +47,7 @@ G_MODULE_EXPORT void initialise(void* inst)
 }
 
 
-G_MODULE_EXPORT void setProperty(void* inst, char* prop, void* value)
-{
-  plugInstStruct* pl = (plugInstStruct*)inst;
-  flat12864Vars* vars = ((flat12864Vars*)pl->data);
-
-  // TODO  -  store any labels etc in var 
-  // (input can only really be char* as that what the xml loader sends)
-  (void)pl;
-  (void)vars; // keep compiler happy about unused variables
-}
+G_MODULE_EXPORT void setProperty(void* inst, char* prop, void* value) { }
 
 // This function can access the UI
 G_MODULE_EXPORT void draw(void* inst) 
@@ -76,12 +67,7 @@ G_MODULE_EXPORT void draw(void* inst)
 
 
 // The following functions cannot access the UI
-G_MODULE_EXPORT void clicked(void* inst, int x, int y) 
-{
-  //plugInstStruct* pl = (plugInstStruct*)inst;
-  //flat12864Vars* vars = ((flat12864Vars*)pl->data);
-
-}
+G_MODULE_EXPORT void clicked(void* inst, int x, int y) { }
 
 // TODO put in plugInstStruct set in initialise
 G_MODULE_EXPORT int getAddressSize() { return 1024; }

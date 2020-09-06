@@ -8,12 +8,11 @@
 
 typedef struct {
 	byte val;
-	//char bitNames[8][16];
 } keyJoyVars;
 
 
 
-G_MODULE_EXPORT void initialise(void* inst) //, Vector2 at, Font fnt) 
+G_MODULE_EXPORT void initialise(void* inst)
 {
 	
   plugInstStruct* pl = (plugInstStruct*)inst;
@@ -26,22 +25,10 @@ G_MODULE_EXPORT void initialise(void* inst) //, Vector2 at, Font fnt)
   SetTextureFilter(pl->plug->resTx, FILTER_BILINEAR);  // Texture scale filter to use
 
 	vars->val = 0x00;
-  //for(int i=0; i<8; i++) {
-  //  vars->bitNames[i][0]=0;
-  //}
+
 }
 
-G_MODULE_EXPORT void setProperty(void* inst, char* prop, void* value)
-{
-  //plugInstStruct* pl = (plugInstStruct*)inst;
-  //keyJoyVars* vars = ((keyJoyVars*)pl->data);
-  //if (prop[0]=='d' || prop[0]=='D') {
-  //  int i = (prop[1] - '0') & 7;
-  //  char* v = (char*)value;
-  //  snprintf(&vars->bitNames[i][0], 15, "%s", v);
-  //  return;
-  //}
-}
+G_MODULE_EXPORT void setProperty(void* inst, char* prop, void* value) { }
 
 // This function can access the UI
 G_MODULE_EXPORT void draw(void* inst) 
@@ -71,12 +58,7 @@ G_MODULE_EXPORT void draw(void* inst)
 
 
 // The following functions cannot access the UI
-G_MODULE_EXPORT void clicked(void* inst, int x, int y) 
-{
-//  plugInstStruct* pl = (plugInstStruct*)inst;
-//  keyJoyVars* vars = ((keyJoyVars*)pl->data);
-
-}
+G_MODULE_EXPORT void clicked(void* inst, int x, int y) { }
 
 // TODO put in plugInstStruct set in initialise
 G_MODULE_EXPORT int getAddressSize() { return 1; }
@@ -89,4 +71,5 @@ G_MODULE_EXPORT byte getAddress(void* inst, int address)
   keyJoyVars* vars = ((keyJoyVars*)pl->data); 
 	return vars->val;
 }
-G_MODULE_EXPORT void setAddress(void* inst, int address, byte data) {/* ignored TODO ??? WARN?*/  }
+
+G_MODULE_EXPORT void setAddress(void* inst, int address, byte data) {  }

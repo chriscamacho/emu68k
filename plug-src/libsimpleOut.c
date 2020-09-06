@@ -52,7 +52,6 @@ G_MODULE_EXPORT void draw(void* inst)
   ClearBackground(BLANK);
   for (int i=0; i<8; i++) {
     int b = 1 << (7-i);
-    
     if (b & vars->val) {
       DrawTextureRec(pl->plug->resTx, (Rectangle){32, 0, 32, 32 },(Vector2){i*32, 0}, WHITE);
     } else {

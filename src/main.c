@@ -19,7 +19,7 @@
 /*
  TODO still very work in progress !
  some code needs seperating out into different units...
- UI going into plugins...
+ UI going into plugins... 
  */
 
 
@@ -282,6 +282,7 @@ int main(int argc, char* argv[])
   SetTargetFPS(60);
 
   font = LoadFontEx("resources/SpaceMono-Bold.ttf", 22, 0, 250);
+  printf("font size: %i\n",font.baseSize);
 
 
   
@@ -307,6 +308,7 @@ int main(int argc, char* argv[])
   GuiSetFont(font);
   
   GuiSetStyle(TEXTBOX, TEXT_COLOR_NORMAL, ColorToInt(WHITE));
+  GuiSetStyle(LABEL, TEXT_COLOR_NORMAL, ColorToInt(WHITE));
   GuiSetStyle(TEXTBOX, TEXT_COLOR_FOCUSED, ColorToInt(RED));
   GuiSetStyle(TEXTBOX, TEXT_COLOR_PRESSED, ColorToInt(BLACK));
   GuiSetStyle(TEXTBOX, TEXT_COLOR_PRESSED, ColorToInt(WHITE));
@@ -315,7 +317,6 @@ int main(int argc, char* argv[])
 //  GuiSetStyle(TEXTBOX, TEXT_ALIGNMENT, GUI_TEXT_ALIGN_CENTER);
 
   while(!WindowShouldClose()) {
-printf("****************************\n");
 
     /* TODO this needs to go in a seperate thread
      * with mutex to block emulation while UI
@@ -365,15 +366,7 @@ printf("****************************\n");
     char buff2[100];
     unsigned int pc;
     unsigned int instr_size;
-
-    for (int i=0; i<8; i++) {
-      unsigned int reg = m68k_get_reg(NULL, M68K_REG_D0+i);
-      DrawTextEx(font, FormatText("D%i %08X ",i,reg), (Vector2){ 20, 20+i*20 }, font.baseSize, 0, WHITE);
-      reg = m68k_get_reg(NULL, M68K_REG_A0+i);
-      DrawTextEx(font, FormatText("A%i %08X ",i,reg), (Vector2){ 200, 20+i*20 }, font.baseSize, 0, WHITE);
-
-    }
-    
+  
     pc = m68k_get_reg(NULL, M68K_REG_PPC);
     
     if (pc > RAMSIZE) {

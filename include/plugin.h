@@ -4,11 +4,14 @@
 
 // plugin emu api - not much for now...
 void setBreakPoint(unsigned int bp);
-void setMouseOffset(float, float); // for now...
 void setRunning(bool run);
 void doStep();
 void doSkip();
 bool isRunning();
+
+// gui access 
+void setMouseOffset(float, float); // for now...
+
 
 typedef unsigned char byte;
 

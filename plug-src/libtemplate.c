@@ -45,6 +45,7 @@ G_MODULE_EXPORT void setProperty(void* inst, char* prop, void* value)
 
   // TODO  -  store any labels etc in var 
   // (input can only really be char* as that what the xml loader sends)
+  // see libsimpleOut.c where each data bit d0-d7 has its own label property
   (void)pl;
   (void)vars; // keep compiler happy about unused variables
 }
@@ -73,10 +74,11 @@ G_MODULE_EXPORT void clicked(void* inst, int x, int y)
 }
 
 // TODO put in plugInstStruct set in initialise
+// TODO return zero if the plugin isn't memory mapped
 G_MODULE_EXPORT int getAddressSize() { return 1; }
 
 // is is only called with a valid address for the device so
-// we don't need to check it (only 1 byte)
+// we don't need to check range check it
 G_MODULE_EXPORT byte getAddress(void* inst, int address) 
 {
 	plugInstStruct* pl = (plugInstStruct*)inst;
