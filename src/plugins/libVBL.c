@@ -17,7 +17,7 @@ typedef struct {
 
 
 
-G_MODULE_EXPORT void initialise(void* inst) //, Vector2 at, Font fnt) 
+G_MODULE_EXPORT void initialise(void* inst)
 {
 	
   plugInstStruct* pl = (plugInstStruct*)inst;
@@ -53,10 +53,7 @@ G_MODULE_EXPORT void draw(void* inst)
 
 
 // The following functions cannot access the UI
-G_MODULE_EXPORT void clicked(void* inst, int x, int y) 
-{
-
-}
+G_MODULE_EXPORT void clicked(void* inst, int x, int y) { }
 
 // TODO put in plugInstStruct set in initialise
 G_MODULE_EXPORT int getAddressSize() { return 1; }

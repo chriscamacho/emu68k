@@ -66,12 +66,7 @@ G_MODULE_EXPORT void draw(void* inst)
 
 
 // The following functions cannot access the UI
-G_MODULE_EXPORT void clicked(void* inst, int x, int y) 
-{
-  //plugInstStruct* pl = (plugInstStruct*)inst;
-  //templateVars* vars = ((templateVars*)pl->data);
-
-}
+G_MODULE_EXPORT void clicked(void* inst, int x, int y) { }
 
 // TODO put in plugInstStruct set in initialise
 // TODO return zero if the plugin isn't memory mapped

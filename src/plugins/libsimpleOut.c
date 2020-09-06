@@ -67,20 +67,15 @@ G_MODULE_EXPORT void draw(void* inst)
 
 
 // The following functions cannot access the UI
-G_MODULE_EXPORT void clicked(void* inst, int x, int y) 
-{
-  // clicking led's does nothing
-}
+G_MODULE_EXPORT void clicked(void* inst, int x, int y) { }
 
 // TODO put in plugInstStruct set in initialise
 G_MODULE_EXPORT int getAddressSize() { return 1; }
 
 // is is only called with a valid address for the device so
 // we don't need to check it (only 1 byte)
-G_MODULE_EXPORT byte getAddress(void* inst, int address) 
-{
-  return 0xff;
-}
+G_MODULE_EXPORT byte getAddress(void* inst, int address) {  return 0xff;  }
+
 G_MODULE_EXPORT void setAddress(void* inst, int address, byte data) {
   plugInstStruct* pl = (plugInstStruct*)inst;
   simpleOutVars* vars = ((simpleOutVars*)pl->data);

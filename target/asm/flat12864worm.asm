@@ -28,6 +28,17 @@ loop:
     
     nop
     nop
+    
+    
+; deliberate address error
+    move.l    #1001,a0
+    move.w    #0,(a0)
+    
+; deliberate bus error
+    move.l    #$fffffffe,a0
+    move.w    #0,(a0)
+
+
     bra       start
 
     addq.l    #1,(frame)        ; increment the frame counter
@@ -89,6 +100,13 @@ waitforit:
     move.b    ($B0000),D6
     cmp.b     D5,D6
     beq       waitforit
+
+
+
+
+
+
+
 
 
 ; clear the frame buffer

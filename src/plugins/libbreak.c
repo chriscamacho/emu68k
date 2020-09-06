@@ -39,7 +39,7 @@ G_MODULE_EXPORT void initialise(void* inst)
   SetTextureFilter(pl->outTx.texture, FILTER_BILINEAR); 
 
   // clear out / initialize anything in vars like strings etc
-  vars->breakp = 0;
+  vars->breakp = 0xffffffff;
   vars->breakedit = false;
   sprintf(vars->breakstr,"%08X",vars->breakp);
 }
@@ -54,7 +54,7 @@ G_MODULE_EXPORT void draw(void* inst)
   plugInstStruct* pl = (plugInstStruct*)inst;
   breakVars* vars = ((breakVars*)pl->data);
   
-  setMouseOffset(pl->pos.x, pl->pos.y);   // TODO caller sets this ?
+  SetMouseOffset(-pl->pos.x, -pl->pos.y);   // TODO caller sets this ?
   if (m68k_get_reg(NULL, M68K_REG_PC) == vars->breakp) {
     vars->fade+=0.1;
     GuiFade(0.9+(sin(vars->fade)*.1));
@@ -71,7 +71,7 @@ G_MODULE_EXPORT void draw(void* inst)
       }
     }
   EndTextureMode();
-  setMouseOffset(0, 0); // caller set ?
+  SetMouseOffset(0, 0); // caller set ?
   GuiFade(1);  // caller set ?
 }
 

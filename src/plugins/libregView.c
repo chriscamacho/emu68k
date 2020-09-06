@@ -16,8 +16,6 @@
  */
 
 typedef struct {
-
-  //char label[33];
   int dummy;
   char regStr[18][9];
   unsigned int regs[18];
@@ -35,7 +33,7 @@ G_MODULE_EXPORT void initialise(void* inst)
   regViewVars* vars = ((regViewVars*)pl->data);
   
   // does np2 really matter this day and age?
-  pl->size = (Vector2){256,220};    // size is always the same for all instances
+  pl->size = (Vector2){256,216};    // size is always the same for all instances
   pl->outTx = LoadRenderTexture(pl->size.x, pl->size.y);  // plugin should only draw on this
   
   SetTextureFilter(pl->outTx.texture, FILTER_BILINEAR); 
@@ -60,9 +58,7 @@ G_MODULE_EXPORT void draw(void* inst)
   plugInstStruct* pl = (plugInstStruct*)inst;
   regViewVars* vars = ((regViewVars*)pl->data);
   
-  setMouseOffset(pl->pos.x, pl->pos.y);   // TODO caller sets this ?
-  //unsigned int pc = m68k_get_reg(NULL, M68K_REG_PC);
-
+  SetMouseOffset(-pl->pos.x, -pl->pos.y);   // TODO caller sets this ?
   
   for (int i=0; i<18; i++) {
     vars->regs[i] = m68k_get_reg(NULL, M68K_REG_D0 + i);
@@ -78,15 +74,15 @@ G_MODULE_EXPORT void draw(void* inst)
   
   for (int i=0;i<5;i++) {
     if(bit & vars->regs[M68K_REG_SR]) {
-      srs[4-i+5] = srb[i+5];
+      srs[9-i] = srb[i+5];
     } else {
-      srs[4-i+5] = srb[i];
+      srs[9-i] = srb[i];
     }
     bit = bit << 1;
   }
 
   BeginTextureMode(pl->outTx);
-    ClearBackground(BLANK);
+    ClearBackground((Color){48,96,48,128});
     for(int i=0; i<8; i++) {
       if (GuiTextBox((Rectangle){ 32, 4+i*20, 90, 22}, vars->regStr[i], 9, vars->editing[i])) {
         vars->editing[i]=!vars->editing[i];
@@ -118,7 +114,7 @@ G_MODULE_EXPORT void draw(void* inst)
   EndTextureMode();
 
   
-  setMouseOffset(0, 0); // caller set ?
+  SetMouseOffset(0, 0); // caller set ?
   //GuiFade(1);  // caller set ?
 }
 

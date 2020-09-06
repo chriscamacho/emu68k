@@ -1,9 +1,18 @@
 
 <machine name="machine1">
-  <plugin libName="regView" x="32" y="8" addressStart="0x0"/>
-	<plugin libName="flat12864" label="Frame Buffer" x="600" y="400" addressStart="0xA0000"/>
-	<plugin libName="VBL" label="VBL" x="2" y="400" addressStart="0xB0000"/>
-  <plugin libName="keyjoy" label="Joystick" x="2" y="500" addressStart="0xC0000"/>
-  <plugin libName="break" label="Break at" x="32" y="680" addressStart="0x0"/>
-  <plugin libName="RunStepSkip" label="CPU Control" x="264" y="680" addressStart="0x0"/>
+  <!-- NB libName is case sensitive -->
+  <!-- label is optional -->
+    
+  <!-- UI plugins -->
+  <plugin libName="regView" label="" x="518" y="42" addressStart="0x0"/>
+  <plugin libName="codeView" label="Dissassembly" x="762" y="42" addressStart="0x0"/>
+  <plugin libName="activityView" label="Log" x="4" y="277" addressStart="0x0"/>
+  <plugin libName="memView" label="Log" x="620" y="320" addressStart="0x0"/>
+  <plugin libName="break" label="Break at" x="460" y="668" addressStart="0x0"/>
+  <plugin libName="RunStepSkip" label="CPU Control" x="296" y="668" addressStart="0x0"/>
+
+  <!-- device plugins -->
+  <plugin libName="flat12864" label="Frame Buffer" x="2" y="2" addressStart="0xA0000"/>
+	<plugin libName="VBL" label="VBL" x="4" y="648" addressStart="0xB0000"/>
+  <plugin libName="keyjoy" label="Joystick" x="136" y="648" addressStart="0xC0000"/>
 </machine>

@@ -1,0 +1,109 @@
+
+#include "plugin.h"
+#include <stdlib.h>
+#include <stdio.h>
+#include "raylib.h"
+#include "raygui.h"
+#include <math.h>
+
+/*
+ *   codeView plugin
+ * 
+ *    Show a dissassembly of the code near PC
+ * 
+ */
+
+typedef struct {
+
+
+  
+} codeViewVars;
+
+
+// set up
+G_MODULE_EXPORT void initialise(void* inst)
+{
+  plugInstStruct* pl = (plugInstStruct*)inst;
+  pl->data = malloc(sizeof(codeViewVars));
+  //codeViewVars* vars = ((codeViewVars*)pl->data);
+  
+  // does np2 really matter this day and age?
+  pl->size = (Vector2){512,220};    // size is always the same for all instances
+  pl->outTx = LoadRenderTexture(pl->size.x, pl->size.y);  // plugin should only draw on this
+  
+  SetTextureFilter(pl->outTx.texture, FILTER_BILINEAR); 
+
+  // clear out / initialize anything in vars like strings etc
+
+
+}
+
+
+G_MODULE_EXPORT void setProperty(void* inst, char* prop, void* value) { }
+
+// makes an ascii string of hex values from emu memory....
+static void make_hex(char* buff, byte* mem, unsigned int pc, unsigned int max, unsigned int length) {
+  char* ptr = buff;
+
+  for(;length>0;length -= 2)
+  {
+    if (pc>max) {sprintf(ptr, "XX"); } else { sprintf(ptr, "%02X", mem[pc]<<8); }
+    if (pc+1>max) {sprintf(ptr+2, "XX"); } else { sprintf(ptr+2, "%02X", mem[pc+1]); }
+
+    pc += 2;
+    ptr += 4;
+    if(length > 2)
+      *ptr++ = ' ';
+  }
+}
+
+// This function can access the UI
+G_MODULE_EXPORT void draw(void* inst) 
+{
+	// rendering takes place on plugin instances render texture.
+  plugInstStruct* pl = (plugInstStruct*)inst;
+  //codeViewVars* vars = ((codeViewVars*)pl->data);
+  
+  SetMouseOffset(-pl->pos.x, -pl->pos.y);   // TODO caller sets this ?
+  unsigned int pc = m68k_get_reg(NULL, M68K_REG_PC);
+
+  char buff[100],buff2[100];
+
+  BeginTextureMode(pl->outTx);
+    ClearBackground((Color){48,96,48,128});
+
+        
+        int instr_size = m68k_disassemble(buff, pc, M68K_CPU_TYPE_68000);
+        make_hex(buff2, pl->memPtr, pc, pl->RamSize, instr_size);
+        GuiSetStyle(LABEL, TEXT_COLOR_NORMAL, 0xffff00ff);
+        GuiLabel((Rectangle){ 8, 4, 127, 18}, FormatText("%08X:%-15s:%s", pc, buff2, buff));
+        GuiSetStyle(LABEL, TEXT_COLOR_NORMAL, ColorToInt(WHITE));
+        
+        for (int i=0;i<5;i++) {
+          pc += instr_size;
+          instr_size = m68k_disassemble(buff, pc, M68K_CPU_TYPE_68000);
+          make_hex(buff2, pl->memPtr, pc, pl->RamSize, instr_size);
+
+          GuiLabel((Rectangle){ 8, 24+i*20, 127, 15}, FormatText("%08X:%-15s:%s", pc, buff2, buff));
+
+        }
+
+
+    
+  EndTextureMode();
+
+  
+  SetMouseOffset(0, 0); // caller set ?
+  //GuiFade(1);  // caller set ?
+}
+
+
+// The following functions cannot access the UI
+G_MODULE_EXPORT void clicked(void* inst, int x, int y) { }
+
+// TODO put in plugInstStruct set in initialise
+G_MODULE_EXPORT int getAddressSize() { return 0; }  // important signals gui plugin
+
+G_MODULE_EXPORT byte getAddress(void* inst, int address) { return 0xff; }
+
+G_MODULE_EXPORT void setAddress(void* inst, int address, byte data) { }

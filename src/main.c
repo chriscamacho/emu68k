@@ -30,16 +30,18 @@ static void pc_callback(unsigned int new_pc);
 
 uint8_t mem[RAMSIZE];
 uint32_t cycles = 0;
-uint32_t breakp = 0; 
+uint32_t breakp = 0xffffffff; 
 
 
 unsigned int g_int_controller_pending = 0;      /* list of pending interrupts */
 unsigned int g_int_controller_highest_int = 0;  /* Highest pending interrupt */
 char statstr[81] = {0};
-char readstr[12][81] = {{0},{0},{0},{0},{0},{0},{0},{0},{0},{0},{0},{0}};
-char *readptr[12] = { readstr[0], readstr[1], readstr[2], readstr[3], readstr[4],
-                      readstr[5], readstr[6], readstr[7], readstr[8], readstr[9],
-                      readstr[10], readstr[11],};
+char readstr[16][81] = {{0},{0},{0},{0},{0},{0},{0},{0},{0},{0},{0},{0},{0},{0},{0},{0}};
+char *readptr[16] = { readstr[0], readstr[1], readstr[2], readstr[3], 
+                      readstr[4], readstr[5], readstr[6], readstr[7],
+                      readstr[8], readstr[9], readstr[10], readstr[11],
+                      readstr[12], readstr[13],readstr[14], readstr[15]
+                      };
 Font font; // UI font global so xml parser can see it... (TODO do something clever with user data pointer?)
 
 // TODO single variable with enums
@@ -133,8 +135,8 @@ void doStep() {
 
 void doSkip() {
   emuRun  = false;
-  emuStep = false;
-  emuSkip = true;    
+  emuStep = true;    // !
+  emuSkip = true;
 }
 
     
@@ -143,7 +145,7 @@ void setBreakPoint(unsigned int bp) {
 }
 
 
-// TODO get the xml loader into its own unit.
+// TODO get the xml loader isolated into its own unit.
 pluginStruct* plug;
 plugInstStruct* plugin;
 
@@ -188,6 +190,9 @@ xml_start (GMarkupParseContext *context,
         plugin = malloc(sizeof(plugInstStruct));
         plugin->plug = plug;
         plugin->plug->initialise(plugin);
+        plugin->RamSize = RAMSIZE;
+        plugin->memPtr = &mem[0];
+
         plugins = g_list_append (plugins, plugin); 
       }
     
@@ -238,6 +243,22 @@ xml_err (GMarkupParseContext *context,
 {
   g_critical ("%s", error->message);
 }
+
+
+// rotates the pointers so as to give a scrolling list...
+char* nextlog()
+{
+  char* tmp   = readptr[15];
+  readptr[15] = readptr[14];  readptr[14] = readptr[13];  readptr[13] = readptr[12];
+  readptr[12] = readptr[11];  readptr[11] = readptr[10];  readptr[10] = readptr[9];
+  readptr[9]  = readptr[8];   readptr[8]  = readptr[7];   readptr[7]  = readptr[6];
+  readptr[6]  = readptr[5];   readptr[5]  = readptr[4];   readptr[4]  = readptr[3];
+  readptr[3]  = readptr[2];   readptr[2]  = readptr[1];   readptr[1]  = readptr[0];
+  readptr[0]  = tmp;
+
+  return readptr[0]; // just so it can be a printf param...
+}
+
 
 int main(int argc, char* argv[])
 {
@@ -303,10 +324,35 @@ int main(int argc, char* argv[])
   g_markup_parse_context_free (context);
   g_free (content);
   
+  
+  /*********************************************************************
+   * 
+   * NB special case activityView must be told the address
+   * of the log lines
+   * 
+   * TODO replace with getEmuProperty used in the plugin
+   * see where else it can be used...
+   * int enum for property name
+   * 
+   * eg
+   * 
+   * p = getEmuProperty(EMU86K_LOG_ADDRESS);
+   * 
+   ********************************************************************/
+  for (GList* l = plugins; l != NULL; l = l->next) {
+    plugInstStruct* p = (plugInstStruct*)l->data; pluginStruct* pl = p->plug;
+    if (strcmp(pl->libName, "activityView") == 0) { 
+              pl->setProperty(p, "log", (void*)&readptr);
+    }
+  }
+  /********************************************************************/
+  
   signed int memview = 0;
   
   GuiSetFont(font);
   
+  
+  // TODO load a theme!
   GuiSetStyle(TEXTBOX, TEXT_COLOR_NORMAL, ColorToInt(WHITE));
   GuiSetStyle(LABEL, TEXT_COLOR_NORMAL, ColorToInt(WHITE));
   GuiSetStyle(TEXTBOX, TEXT_COLOR_FOCUSED, ColorToInt(RED));
@@ -362,18 +408,21 @@ int main(int argc, char* argv[])
 
     DrawFPS(0, 0);
 
-    char buff[100];
-    char buff2[100];
+    //char buff[100];
+    //char buff2[100];
     unsigned int pc;
-    unsigned int instr_size;
+    //unsigned int instr_size;
   
-    pc = m68k_get_reg(NULL, M68K_REG_PPC);
+    pc = m68k_get_reg(NULL, M68K_REG_PC);
     
     if (pc > RAMSIZE) {
       // assuming all plugins are inside ram range for now...
       m68k_pulse_bus_error();
-      DrawTextEx(font, FormatText("PC>%08X: ", pc), (Vector2){ 360, 40 }, font.baseSize, 0, RED);
+      
+      //DrawTextEx(font, FormatText("PC>%08X: ", pc), (Vector2){ 360, 40 }, font.baseSize, 0, RED);
+      snprintf(nextlog(),80,"ERROR bus error, access not handled %08X",pc);
     } else {
+/*      
       instr_size = m68k_disassemble(buff, pc, M68K_CPU_TYPE_68000);
       make_hex(buff2, pc, instr_size);
       DrawTextEx(font, FormatText("PC>%08X: %-16s: %s", pc, buff2, buff), (Vector2){ 360, 40 }, font.baseSize, 0, WHITE);
@@ -384,6 +433,7 @@ int main(int argc, char* argv[])
         make_hex(buff2, pc, instr_size);
         DrawTextEx(font, FormatText("   %08X: %-16s: %s", pc, buff2, buff), (Vector2){ 360, 60+i*20 }, font.baseSize, 0, WHITE);
       }
+      
       DrawTextEx(font, "- Recent memory activity -", (Vector2){ 120, 200 }, font.baseSize, 0, WHITE);
       DrawTextEx(font, FormatText(">%s", statstr), (Vector2){ 20, 220 }, font.baseSize, 0, WHITE);
       for (int i=0;i<12;i++) {
@@ -401,7 +451,7 @@ int main(int argc, char* argv[])
         if (i==3) c = YELLOW;
         DrawTextEx(font, FormatText("%s", buff2), (Vector2){ 720, 200+i*20 }, font.baseSize, 0, c);
       }
-
+*/
       
       for (GList* l = plugins; l != NULL; l = l->next) {
         plugInstStruct* p = (plugInstStruct*)l->data;
@@ -432,32 +482,14 @@ int main(int argc, char* argv[])
 }
 
 
-// rotates the pointers so as to give a scrolling list...
-char* nextlog()
-{
-  char* tmp = readptr[11];
-  readptr[11] = readptr[10];
-  readptr[10] = readptr[9];
-  readptr[9] = readptr[8];
-  readptr[8] = readptr[7];
-  readptr[7] = readptr[6];
-  readptr[6] = readptr[5];
-  readptr[5] = readptr[4];
-  readptr[4] = readptr[3];
-  readptr[3] = readptr[2];
-  readptr[2] = readptr[1];
-  readptr[1] = readptr[0];
-  readptr[0] = tmp;
 
-  return readptr[0]; // just so it can be a printf param...
-}
 
 void dobreak(unsigned int pc) {
       emuStep = false;
       emuRun = false;
       emuSkip = false;
       m68k_end_timeslice();  
-      snprintf(nextlog(),80,"Cycl %08X :  break at %08X", cycles, pc);
+      snprintf(nextlog(),80,"%08X :  emulation paused at %08X", cycles, pc);
 }
 
 static void pc_callback(unsigned int new_pc) {
@@ -499,10 +531,10 @@ unsigned int m68k_read_memory_8(unsigned int address)
         return pl->getAddress(p, address);
       }
     }    
-    snprintf(nextlog(),80,"Cycl %08X : 8 bit read at %08X, %02X", cycles, address, mem[address]);
+    snprintf(nextlog(),80,"%08X : 8 bit read at %08X, %02X", cycles, address, mem[address]);
     return mem[address];
   }
-  snprintf(nextlog(),80,"TODO bus error, access not handled %08X",address);
+  snprintf(nextlog(),80,"ERROR bus error, access not handled %08X",address);
   return 0xff;
 }
 
@@ -510,10 +542,10 @@ unsigned int m68k_read_memory_8(unsigned int address)
 unsigned int m68k_read_memory_16(unsigned int address) 
 {
   if (address < RAMSIZE-1) {
-    snprintf(nextlog(),80,"Cycl %08X : 16 bit read at %08X, %04X", cycles, address, mem[address]<<8 | mem[address+1]);
+    snprintf(nextlog(),80,"%08X : 16 bit read at %08X, %04X", cycles, address, mem[address]<<8 | mem[address+1]);
     return mem[address]<<8 | mem[address+1];
   }
-  snprintf(nextlog(),80,"TODO bus error, access not handled %08X",address);
+  snprintf(nextlog(),80,"ERROR bus error, access not handled %08X",address);
   return 0xffff;
 }
 
@@ -521,10 +553,10 @@ unsigned int m68k_read_memory_16(unsigned int address)
 unsigned int m68k_read_memory_32(unsigned int address) 
 {
   if (address < RAMSIZE-3) {
-    snprintf(nextlog(),80,"Cycl %08X : 32 bit read at %08X, %08X", cycles, address, mem[address]<<24 | mem[address+1]<<16 | mem[address+2]<<8 | mem[address+3]);
+    snprintf(nextlog(),80,"%08X : 32 bit read at %08X, %08X", cycles, address, mem[address]<<24 | mem[address+1]<<16 | mem[address+2]<<8 | mem[address+3]);
     return mem[address]<<24 | mem[address+1]<<16 | mem[address+2]<<8 | mem[address+3];
   }
-  snprintf(nextlog(),80,"TODO bus error, access not handled %08X",address);
+  snprintf(nextlog(),80,"ERROR bus error, access not handled %08X",address);
   return 0xffffffff;
 }
 
@@ -534,7 +566,7 @@ void m68k_write_memory_8(unsigned int address, unsigned int value)
   if (address < RAMSIZE) {
     mem[address] = value & 0xff;
 
-    snprintf(nextlog(),80,"Cycl %08X : 8 bit write at %08X, %02X\n", cycles, address, mem[address]);
+    snprintf(nextlog(),80,"%08X : 8 bit write at %08X, %02X\n", cycles, address, mem[address]);
     
     for (GList* l = plugins; l != NULL; l = l->next) {
       plugInstStruct* p = (plugInstStruct*)l->data;
@@ -546,7 +578,7 @@ void m68k_write_memory_8(unsigned int address, unsigned int value)
       }
     } 
   } else {
-    snprintf(nextlog(),80,"TODO bus error, access not handled %08X",address);
+    snprintf(nextlog(),80,"ERROR bus error, access not handled %08X",address);
   }
 }
 
@@ -556,9 +588,9 @@ void m68k_write_memory_16(unsigned int address, unsigned int value)
   if (address < RAMSIZE-1) {
     mem[address]   = (value>>8) & 0xff;
     mem[address+1] = (value)    & 0xff;
-    snprintf(nextlog(),80,"Cycl %08X : 16 bit write at %08X, %04X", cycles, address, value&0xffff);
+    snprintf(nextlog(),80,"%08X : 16 bit write at %08X, %04X", cycles, address, value&0xffff);
   } else {
-    snprintf(nextlog(),80,"TODO bus error, access not handled %08X",address);
+    snprintf(nextlog(),80,"ERROR bus error, access not handled %08X",address);
   }
 }
 
@@ -570,8 +602,8 @@ void m68k_write_memory_32(unsigned int address, unsigned int value)
     mem[address+1] = (value>>16) & 0xff;
     mem[address+2] = (value>>8)  & 0xff;
     mem[address+3] = (value)     & 0xff;
-    snprintf(nextlog(),80,"Cycl %08X : 32 bit write at %08X, %08X", cycles, address, value&0xffffffff);
+    snprintf(nextlog(),80,"%08X : 32 bit write at %08X, %08X", cycles, address, value&0xffffffff);
   } else {
-    snprintf(nextlog(),80,"TODO bus error, access not handled %08X",address);
+    snprintf(nextlog(),80,"ERROR bus error, access not handled %08X",address);
   }
 }

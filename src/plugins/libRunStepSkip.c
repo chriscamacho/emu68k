@@ -47,7 +47,7 @@ G_MODULE_EXPORT void draw(void* inst)
   plugInstStruct* pl = (plugInstStruct*)inst;
   rssVars* vars = ((rssVars*)pl->data);
   
-  setMouseOffset(pl->pos.x, pl->pos.y);   // TODO caller sets this ?
+  SetMouseOffset(-pl->pos.x, -pl->pos.y);   // TODO caller sets this ?
   
   BeginTextureMode(pl->outTx);
     ClearBackground(BLANK);
@@ -72,13 +72,14 @@ G_MODULE_EXPORT void draw(void* inst)
     
     // skip button
     if (GuiButton((Rectangle){100,0,48,31},"Skip")) {
-      doStep();
+      doSkip();
     }
     
     
   EndTextureMode();
-  setMouseOffset(0, 0); // caller set ?
 
+  SetMouseOffset(0, 0);   // TODO caller sets this ?
+  
 }
 
 

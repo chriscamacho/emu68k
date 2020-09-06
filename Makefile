@@ -19,54 +19,87 @@ ASM=$(wildcard target/asm/*.asm)
 ASMs=$(ASM:target/asm/%.asm=target/asm/%.s)
 ASMb=$(ASM:target/asm/%.asm=target/asm/%.bin)
 
-PLUGSRC:= $(wildcard plug-src/*.c)
+PLUGSRC:= $(wildcard src/plugins/*.c)
 PLUGS:= $(PLUGSRC:.c=.so)
-PLUGDEST:= $(subst plug-src,plugins,$(PLUGS))
-
+PLUGS:= $(subst src/plugins,plugins,$(PLUGS))
 
 CC=gcc
 A68K=support/a68k/A68k
 SREC=support/srec/srec2bin
 
 .PHONY: all
-all: $(MUSA)/m68kmake emu68k plugins asm
+all: $(MUSA)/m68kmake emu68k $(OBJ) $(PLUGS) asm
 
+	
 .PHONY: asm
 asm: $(ASMb)
 
-
 emu68k: $(MUSA)/m68kmake $(OBJ) $(MUSAOBJ)
+	@echo 
+	@echo "linking emu68k"
+	@echo 
 	$(CC) $(MUSAOBJ) $(OBJ) -o emu68k $(LDFLAGS)
+	@echo ------------------------------------------------------------------------
 
 $(MUSA)/m68kmake:
+	@echo 
+	@echo "compile & run m68kmake"
+	@echo 
 	gcc $(MUSAINC) -o $(MUSA)/m68kmake $(MUSA)/m68kmake.c
 	cd $(MUSA) && ./m68kmake
+	@echo ------------------------------------------------------------------------
+
+$(MUSAOBJ): $(MUSA)/%.o : $(MUSA)/%.c
+	@echo 
+	@echo "compile $(<) to $(@)" 
+	@echo 
+	$(CC) $(INC) $(CFLAGS) -c $< -o $@
+	@echo ------------------------------------------------------------------------
 	
 $(OBJ): obj/%.o : src/%.c
+	@echo 
+	@echo "compile $(<) to $(@)" 
+	@echo 
 	$(CC) $(INC) $(CFLAGS) -c $< -o $@
+	@echo ------------------------------------------------------------------------
 	
 $(ASMs): target/asm/%.s : target/asm/%.asm 
+	@echo 
+	@echo "assemble $(<) to $(@)" 
+	@echo 
 	$(A68K) -n -l -s $<
+	@echo ------------------------------------------------------------------------
 
 $(ASMb): target/asm/%.bin : target/asm/%.s 
+	@echo 
+	@echo "convert $(<) to $(@)" 
+	@echo 
 	$(SREC) -i $< -o $@
+	@echo ------------------------------------------------------------------------
 
-plugins: $(PLUGDEST)
-
-plugins/%.so: plug-src/%.c
+$(PLUGS): plugins/%.so : src/plugins/%.c
+	@echo 
+	@echo "compile $(<) to $(@)" 
+	@echo 
 	gcc -o $@ -fPIC -shared $(CFLAGS) $< $(LDPLUG)
-	
+	@echo ------------------------------------------------------------------------
+
+plugins: $(PLUGS)
+
+
 
 clean:
 	rm -rf emu68k
 	rm -rf obj/*
-	rm -rf asm-src/*.bin
-	rm -rf asm-src/*.s
+	rm -rf target/asm/*.bin
+	rm -rf target/asm/*.s
+	rm -rf target/asm/*.lst
 	rm -rf plugins/*.so
-	rm -rf $(MUSA)/*.o
-	rm -rf $(MUSA)/softfloat/*.o	
+
 
 cleanMus: clean
+	rm -rf $(MUSA)/*.o
+	rm -rf $(MUSA)/softfloat/*.o	
 	rm -rf $(MUSA)/m68kops.*
 	rm -rf $(MUSA)/m68kmake
 	
