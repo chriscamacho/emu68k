@@ -34,7 +34,7 @@ G_MODULE_EXPORT void initialise(void* inst)
   SetTextureFilter(pl->outTx.texture, FILTER_BILINEAR); 
 
   // clear out / initialize anything in vars like strings etc
-  vars->running = false;
+//  vars->running = false;
 }
 
 
@@ -61,7 +61,7 @@ G_MODULE_EXPORT void draw(void* inst)
       res = GuiToggle((Rectangle){0,0,48,31}, "Run", vars->running);
     }
     if (vars->running != res) {
-      vars->running = ! vars->running;
+      vars->running = res;
       setRunning(vars->running);
     }
     

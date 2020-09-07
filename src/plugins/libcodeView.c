@@ -27,8 +27,8 @@ G_MODULE_EXPORT void initialise(void* inst)
   pl->data = malloc(sizeof(codeViewVars));
   //codeViewVars* vars = ((codeViewVars*)pl->data);
   
-  // does np2 really matter this day and age?
-  pl->size = (Vector2){512,220};    // size is always the same for all instances
+
+  pl->size = (Vector2){550,124};    // size is always the same for all instances
   pl->outTx = LoadRenderTexture(pl->size.x, pl->size.y);  // plugin should only draw on this
   
   SetTextureFilter(pl->outTx.texture, FILTER_BILINEAR); 
@@ -41,21 +41,7 @@ G_MODULE_EXPORT void initialise(void* inst)
 
 G_MODULE_EXPORT void setProperty(void* inst, char* prop, void* value) { }
 
-// makes an ascii string of hex values from emu memory....
-static void make_hex(char* buff, byte* mem, unsigned int pc, unsigned int max, unsigned int length) {
-  char* ptr = buff;
 
-  for(;length>0;length -= 2)
-  {
-    if (pc>max) {sprintf(ptr, "XX"); } else { sprintf(ptr, "%02X", mem[pc]<<8); }
-    if (pc+1>max) {sprintf(ptr+2, "XX"); } else { sprintf(ptr+2, "%02X", mem[pc+1]); }
-
-    pc += 2;
-    ptr += 4;
-    if(length > 2)
-      *ptr++ = ' ';
-  }
-}
 
 // This function can access the UI
 G_MODULE_EXPORT void draw(void* inst) 
@@ -70,14 +56,14 @@ G_MODULE_EXPORT void draw(void* inst)
   char buff[100],buff2[100];
 
   BeginTextureMode(pl->outTx);
-    ClearBackground((Color){48,96,48,128});
+    ClearBackground((Color){0,0,0,16});
 
         
         int instr_size = m68k_disassemble(buff, pc, M68K_CPU_TYPE_68000);
         make_hex(buff2, pl->memPtr, pc, pl->RamSize, instr_size);
         GuiSetStyle(LABEL, TEXT_COLOR_NORMAL, 0xffff00ff);
         GuiLabel((Rectangle){ 8, 4, 127, 18}, FormatText("%08X:%-15s:%s", pc, buff2, buff));
-        GuiSetStyle(LABEL, TEXT_COLOR_NORMAL, ColorToInt(WHITE));
+        GuiSetStyle(LABEL, TEXT_COLOR_NORMAL, 0xffffffff);
         
         for (int i=0;i<5;i++) {
           pc += instr_size;

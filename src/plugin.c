@@ -73,4 +73,18 @@ void setPluginInstanceStartAddress(plugInstStruct *plugInst, int a) {
     plugInst->addressStart = a;
 }
 
+// makes an ascii string of hex values from emu memory....
+void make_hex(char* buff, byte* mem, unsigned int pc, unsigned int max, unsigned int length) {
+  char* ptr = buff;
 
+  for(;length>0;length -= 2)
+  {
+    if (pc>max) {sprintf(ptr, "--"); } else { sprintf(ptr, "%02X", mem[pc]<<8); }
+    if (pc+1>max) {sprintf(ptr+2, "--"); } else { sprintf(ptr+2, "%02X", mem[pc+1]); }
+
+    pc += 2;
+    ptr += 4;
+    if(length > 2)
+      *ptr++ = ' ';
+  }
+}

@@ -73,3 +73,4 @@ typedef struct {
 void integratePlugin(pluginStruct *plugin);
 void namePluginInstance(plugInstStruct *plugInst, char* str);
 void setPluginInstanceStartAddress(plugInstStruct *plugInst, int a);
+void make_hex(char* buff, byte* mem, unsigned int pc, unsigned int max, unsigned int length);

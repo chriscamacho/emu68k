@@ -82,9 +82,9 @@ G_MODULE_EXPORT void draw(void* inst)
   }
 
   BeginTextureMode(pl->outTx);
-    ClearBackground((Color){48,96,48,128});
+    ClearBackground((Color){0,0,0,16});
     for(int i=0; i<8; i++) {
-      if (GuiTextBox((Rectangle){ 32, 4+i*20, 90, 22}, vars->regStr[i], 9, vars->editing[i])) {
+      if (GuiTextBox((Rectangle){ 32, 4+i*20, 92, 18}, vars->regStr[i], 9, vars->editing[i])) {
         vars->editing[i]=!vars->editing[i];
         if (!vars->editing[i]) {
           unsigned int v = strtoul(vars->regStr[i], NULL, 16);
@@ -94,10 +94,10 @@ G_MODULE_EXPORT void draw(void* inst)
           printf("v=%08x\n",v);
         }
       }
-      if (GuiTextBox((Rectangle){ 161, 4+i*20, 90, 22}, vars->regStr[i+8], 9, vars->editing[i+8])) {
+      if (GuiTextBox((Rectangle){ 161, 4+i*20, 92, 18}, vars->regStr[i+8], 9, vars->editing[i+8])) {
         vars->editing[i+8]=!vars->editing[i+8];
         if (!vars->editing[i+8]) {
-          unsigned int v = strtoul(vars->regStr[i], NULL, 16);
+          unsigned int v = strtoul(vars->regStr[i+8], NULL, 16);
           if (v!=vars->last[i+8]) sprintf(vars->regStr[i+8],"%08X",v);
           m68k_set_reg(M68K_REG_D0 + i+8, v);
           vars->last[i+8]=v;

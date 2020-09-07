@@ -1,39 +1,41 @@
 
 <machine name="machine1">
-<!--
-    <plugin
-        libName="kBuffer"
-        addressStart="0x4000" />
--->
+
+  <plugin libName="regView" label="Registers" x="8" y="20" addressStart="0x0"/>
+  <plugin libName="codeView" label="Dissassembly" x="280" y="20" addressStart="0x0"/>
+  <plugin libName="activityView" label="Log" x="8" y="296" addressStart="0x0"/>
+  <plugin libName="memView" label="Memory" x="620" y="180" addressStart="0x0"/>
+  <plugin libName="break" label="Break at" x="460" y="200" addressStart="0x0"/>
+  <plugin libName="RunStepSkip" label="CPU Control" x="296" y="200" addressStart="0x0"/>
 
 
-    <plugin libName="simpleOut" label="count" x="700" y="300" addressStart="0xA0000" >
-        <property name="d0" value="1"></property> <property name="d1" value="2"></property>
-        <property name="d2" value="4"></property> <property name="d3" value="8"></property>
-        <property name="d4" value="1"></property> <property name="d5" value="2"></property>
-        <property name="d6" value="4"></property> <property name="d7" value="8"></property>
-    </plugin>    
-    
-    <plugin libName="simpleOut" label="out0" x="700" y="364" addressStart="0xB0000" />
-    <plugin libName="simpleOut" label="out1" x="700" y="396" addressStart="0xB0002" />
-    <plugin libName="simpleOut" label="out2" x="700" y="428" addressStart="0xB0004" />
-    <plugin libName="simpleOut" label="out3" x="700" y="460" addressStart="0xB0006" />
-    <plugin libName="simpleOut" label="out4" x="700" y="492" addressStart="0xB0008" />
-    <plugin libName="simpleOut" label="out5" x="700" y="524" addressStart="0xB000A" />
-    <plugin libName="simpleOut" label="out6" x="700" y="556" addressStart="0xB000C" />
-    <plugin libName="simpleOut" label="out7" x="700" y="588" addressStart="0xB000E" />
+  <plugin libName="simpleOut" label="count" x="900" y="100" addressStart="0xA0000" >
+      <property name="d0" value="1"></property> <property name="d1" value="2"></property>
+      <property name="d2" value="4"></property> <property name="d3" value="8"></property>
+      <property name="d4" value="1"></property> <property name="d5" value="2"></property>
+      <property name="d6" value="4"></property> <property name="d7" value="8"></property>
+  </plugin>    
+  
+  <plugin libName="simpleOut" label="" x="900" y="364" addressStart="0xB0000" />
+  <plugin libName="simpleOut" label="" x="900" y="396" addressStart="0xB0002" />
+  <plugin libName="simpleOut" label="" x="900" y="428" addressStart="0xB0004" />
+  <plugin libName="simpleOut" label="" x="900" y="460" addressStart="0xB0006" />
+  <plugin libName="simpleOut" label="" x="900" y="492" addressStart="0xB0008" />
+  <plugin libName="simpleOut" label="" x="900" y="524" addressStart="0xB000A" />
+  <plugin libName="simpleOut" label="" x="900" y="556" addressStart="0xB000C" />
+  <plugin libName="simpleOut" label="" x="900" y="588" addressStart="0xB000E" />
 
-    <plugin libName="simpleIn" label="in1" x="200" y="400" addressStart="0x80000" >   
-        <property name="d0" value=" 1"></property> <property name="d1" value=" 2"></property>
-        <property name="d2" value=" 4"></property> <property name="d3" value=" 8"></property>
-        <property name="d4" value="16"></property> <property name="d5" value="32"></property>
-        <property name="d6" value="64"></property> <property name="d7" value="128"></property>
-    </plugin>  
-    
-    <plugin libName="simpleIn" label="in2" x="200" y="500" addressStart="0x80002" >   
-        <property name="d0" value="A0"></property> <property name="d1" value="A1"></property>
-        <property name="d2" value="A2"></property> <property name="d3" value=""></property>
-        <property name="d4" value=""></property> <property name="d5" value=""></property>
-        <property name="d6" value=""></property> <property name="d7" value=" W"></property>
-    </plugin>       
+  <plugin libName="simpleIn" label="in1" x="600" y="400" addressStart="0x80000" >   
+      <property name="d0" value=" 1"></property> <property name="d1" value=" 2"></property>
+      <property name="d2" value=" 4"></property> <property name="d3" value=" 8"></property>
+      <property name="d4" value="16"></property> <property name="d5" value="32"></property>
+      <property name="d6" value="64"></property> <property name="d7" value="128"></property>
+  </plugin>  
+  
+  <plugin libName="simpleIn" label="in2" x="600" y="500" addressStart="0x80002" >   
+      <property name="d0" value="A0"></property> <property name="d1" value="A1"></property>
+      <property name="d2" value="A2"></property> <property name="d3" value=""></property>
+      <property name="d4" value=""></property> <property name="d5" value=""></property>
+      <property name="d6" value=""></property> <property name="d7" value=" W"></property>
+  </plugin>       
 </machine>

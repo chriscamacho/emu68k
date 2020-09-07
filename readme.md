@@ -1,6 +1,6 @@
 # Emu68k simulated 68000 system with device plugins
 
-![8x8x1 editor](./screenies/first-machine-xml.png)
+![8x8x1 editor](./screenies/machine1-with-plugins.png)
 
 ## About
 
@@ -11,17 +11,18 @@ It is mainly intended as a tool to help with my experiments with a 68008 and too
 Its still early days and there is lots to do! [I'd welcome ideas and contributions, and relevant chat about hardware implementation.](http://bedroomcoders.co.uk/captcha/)
 
 #### file structure
-	asm-src			68k assembly language files
-	plugins			plugin library binaries
-	obj			build objects
-	readme.md		this file
-	src			C source code
-	screenies		screen shots
-	machines		machine specification files
-	plug-src		C source code for plugins
+	target/asm			68k assembly language files
+	target/machines		machine specification files
+	plugins				plugin library binaries
+	obj					build objects
+	readme.md			this file
+	src					C source code
+	src/plugins			C source for plugins
+	screenies			screen shots
+	plug-src			C source code for plugins
 	Makefile		
-	include			include sources
-	resources		runtime resources (textures etc) for emu68k and plugins
+	include				include sources
+	resources			runtime resources (textures etc) for emu68k and plugins
 	support/Musashi		68k simulation library
 	support/srec		srecord files utility
 	support/a68k		68k assembler
@@ -96,11 +97,13 @@ This tag encapsulates a collection of plugin instances, it has a "name" attribut
 
 ## Writing plugins
 
+Now UI controls to do with the actual running of the 68000 are all provided by plugins, this means things are really flexible, for example if you want to follow the stack and also say some variables, just add two memView plugins point one at your variables and set A7 in the Ax offset selector...
+
 First read the source for what few plugins there are! more to come, contributions welcome! One potential cause for confusion is the distinction between a plugin and a plugin instance.  A plugin represents the actual library and a collection of properties global to all plugin instances of that plugin.  A plugin instance is what actually provides properties that are specific to that instance of the plugin in such as position and internal state.
 
 #### Plugin API
 
-This may change! Its still early days, future plugins might include a 1kb 128x64x1 display device, and a keyboard joystick, so you can control the system when running with the cursor or wasd keys, I can see all the ingredients for a game! 
+This may change! Its still early days, you have a lot of power, when writing device plugins you shouldn't "cheat" for example until there is a mechanism for devices to gain control over the bus from the 68000, then devices should only be able to look inside their own memory range...
 
 **void initialise(void\* pInst)** used to to set stuff up call whenever an instance is created. See the plugin source to see the things that you need to do like set up the plugins render texture, allocate its variables area etc 
 
@@ -110,8 +113,27 @@ This may change! Its still early days, future plugins might include a 1kb 128x64
 
 **void setAddress(void\* pInst, int address, byte data)** called when a memory write happens inside the mapped memory range
 
-**void clicked(void\* pInst, int x, int y)** if the user clicks on the plugins area this is called with the screen coordinates.
+possibly deprecated **void clicked(void\* pInst, int x, int y)** if the user clicks on the plugins area this is called with the screen coordinates. this was created before I started using RayGui for the UI...
 
 **void draw(void\* pInst)** the plugin instance is drawn on its own render texture, this is a good place to also update anything that needs to be updated continuously.
 
 **void setProperty(void\* inst, const char\* prop, void\* value)** this is used to set properties specific to a plugin type, it could be bit labels or potentially more unique settings.
+
+**void setBreakPoint(unsigned int bp)** sets the address the emulation with break at
+
+**void setRunning(bool run)** starts the emulation running
+
+**void doStep()** single step the emulation
+
+**void doSkip()** skip the PC onto the next instruction
+
+**bool isRunning()** is the emulation currently running
+
+**void make_hex(char* buff, byte* mem, unsigned int pc, unsigned int max, unsigned int length)** a convenience function makes an ascii string from emulation memory contents
+
+**TODO** lots but there should be an api to get/set properties pertain to the emulation for example
+ 
+    ptr = getEmuProperty(EMU86K_LOG_ADDRESS);
+    
+
+others might include EMU86K\_RUN set with enum to step run stop, can be read EMU86K\_BREAKPOINT to set the machines breakpoint

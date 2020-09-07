@@ -96,20 +96,6 @@ void int_controller_clear(unsigned int value)
   m68k_set_irq(g_int_controller_highest_int);
 }
 
-// makes an ascii string of hex values from emu memory....
-void make_hex(char* buff, unsigned int pc, unsigned int length) {
-  char* ptr = buff;
-
-  for(;length>0;length -= 2)
-  {
-    if (pc>RAMSIZE) {sprintf(ptr, "XX"); } else { sprintf(ptr, "%02X", mem[pc]<<8); }
-    if (pc+1>RAMSIZE) {sprintf(ptr+2, "XX"); } else { sprintf(ptr+2, "%02X", mem[pc+1]); }
-    pc += 2;
-    ptr += 4;
-    if(length > 2)
-      *ptr++ = ' ';
-  }
-}
 
 bool isRunning() {
   return emuRun;
@@ -336,7 +322,7 @@ int main(int argc, char* argv[])
    * 
    * eg
    * 
-   * p = getEmuProperty(EMU86K_LOG_ADDRESS);
+   * ptr = getEmuProperty(EMU86K_LOG_ADDRESS);
    * 
    ********************************************************************/
   for (GList* l = plugins; l != NULL; l = l->next) {
@@ -347,21 +333,21 @@ int main(int argc, char* argv[])
   }
   /********************************************************************/
   
-  signed int memview = 0;
-  
   GuiSetFont(font);
-  
-  
   // TODO load a theme!
-  GuiSetStyle(TEXTBOX, TEXT_COLOR_NORMAL, ColorToInt(WHITE));
-  GuiSetStyle(LABEL, TEXT_COLOR_NORMAL, ColorToInt(WHITE));
-  GuiSetStyle(TEXTBOX, TEXT_COLOR_FOCUSED, ColorToInt(RED));
-  GuiSetStyle(TEXTBOX, TEXT_COLOR_PRESSED, ColorToInt(BLACK));
-  GuiSetStyle(TEXTBOX, TEXT_COLOR_PRESSED, ColorToInt(WHITE));
-  GuiSetStyle(TEXTBOX, BASE_COLOR_PRESSED, ColorToInt(BLACK));
-  GuiSetStyle(TEXTBOX, TEXT_INNER_PADDING, 0);
+  GuiSetStyle(TEXTBOX,        TEXT_COLOR_NORMAL,        ColorToInt(WHITE));
+  GuiSetStyle(LABEL,          TEXT_COLOR_NORMAL,        ColorToInt(WHITE));
+  GuiSetStyle(TEXTBOX,        TEXT_COLOR_FOCUSED,       ColorToInt(RED));
+  GuiSetStyle(TEXTBOX,        TEXT_COLOR_PRESSED,       ColorToInt(BLACK));
+  GuiSetStyle(TEXTBOX,        TEXT_COLOR_PRESSED,       ColorToInt(WHITE));
+  GuiSetStyle(TEXTBOX,        BASE_COLOR_PRESSED,       ColorToInt(BLACK));
+  GuiSetStyle(TEXTBOX,        TEXT_INNER_PADDING,       0);
+  GuiSetStyle(DROPDOWNBOX,    DROPDOWN_ITEMS_PADDING,   -1);
+  GuiSetStyle(DROPDOWNBOX,    BORDER_WIDTH,             0);
+  
 //  GuiSetStyle(TEXTBOX, TEXT_ALIGNMENT, GUI_TEXT_ALIGN_CENTER);
-
+  char buff[100];
+  
   while(!WindowShouldClose()) {
 
     /* TODO this needs to go in a seperate thread
@@ -370,7 +356,7 @@ int main(int argc, char* argv[])
     if (emuStep || emuRun) {
       if (emuStep) {
         if (emuSkip) {
-          char buff[100];
+          
           unsigned int pc = m68k_get_reg(NULL, M68K_REG_PC);
           int instr_size = m68k_disassemble(buff, pc, M68K_CPU_TYPE_68000);
           pc += instr_size;
@@ -406,53 +392,20 @@ int main(int argc, char* argv[])
 
     ClearBackground(DARKGREEN);
 
-    DrawFPS(0, 0);
+    DrawFPS(1204, 700);
 
-    //char buff[100];
-    //char buff2[100];
     unsigned int pc;
-    //unsigned int instr_size;
   
     pc = m68k_get_reg(NULL, M68K_REG_PC);
     
     if (pc > RAMSIZE) {
       // assuming all plugins are inside ram range for now...
-      m68k_pulse_bus_error();
+      //m68k_pulse_bus_error();
+      setRunning(false);
       
-      //DrawTextEx(font, FormatText("PC>%08X: ", pc), (Vector2){ 360, 40 }, font.baseSize, 0, RED);
       snprintf(nextlog(),80,"ERROR bus error, access not handled %08X",pc);
     } else {
-/*      
-      instr_size = m68k_disassemble(buff, pc, M68K_CPU_TYPE_68000);
-      make_hex(buff2, pc, instr_size);
-      DrawTextEx(font, FormatText("PC>%08X: %-16s: %s", pc, buff2, buff), (Vector2){ 360, 40 }, font.baseSize, 0, WHITE);
 
-      for (int i=0;i<5;i++) {
-        pc += instr_size;
-        instr_size = m68k_disassemble(buff, pc, M68K_CPU_TYPE_68000);
-        make_hex(buff2, pc, instr_size);
-        DrawTextEx(font, FormatText("   %08X: %-16s: %s", pc, buff2, buff), (Vector2){ 360, 60+i*20 }, font.baseSize, 0, WHITE);
-      }
-      
-      DrawTextEx(font, "- Recent memory activity -", (Vector2){ 120, 200 }, font.baseSize, 0, WHITE);
-      DrawTextEx(font, FormatText(">%s", statstr), (Vector2){ 20, 220 }, font.baseSize, 0, WHITE);
-      for (int i=0;i<12;i++) {
-        DrawTextEx(font, FormatText("%s", readptr[i]), (Vector2){ 20, 260+i*20 }, font.baseSize, 0, WHITE);
-      }
-      
-      // this should be a setting on or off and offset
-      memview = m68k_get_reg(NULL, M68K_REG_A7)-48;
-      
-      
-      for (int i=0; i<7; i++) {
-        DrawTextEx(font, FormatText("%08X :", memview+i*16), (Vector2){ 600, 200+i*20 }, font.baseSize, 0, WHITE);
-        make_hex(buff2, memview+i*16, 16);
-        Color c = WHITE;
-        if (i==3) c = YELLOW;
-        DrawTextEx(font, FormatText("%s", buff2), (Vector2){ 720, 200+i*20 }, font.baseSize, 0, c);
-      }
-*/
-      
       for (GList* l = plugins; l != NULL; l = l->next) {
         plugInstStruct* p = (plugInstStruct*)l->data;
         pluginStruct* pl = p->plug;
@@ -463,12 +416,21 @@ int main(int argc, char* argv[])
         // then draw...
         pl->draw(p); // draw to the render texture
         DrawTextureRec(p->outTx.texture,(Rectangle){0, 0, p->size.x, -p->size.y },(Vector2){p->pos.x, p->pos.y}, WHITE);
+        
+        /*
         if (p->addressStart==0){
           DrawTextEx(font, FormatText("%s", p->name), (Vector2){ p->pos.x+16, p->pos.y-font.baseSize }, font.baseSize, 0, WHITE);
         } else {
           DrawTextEx(font, FormatText("%s", p->name), (Vector2){ p->pos.x+2+p->size.x, p->pos.y-4 }, font.baseSize, 0, WHITE);
           DrawTextEx(font, FormatText("%X", p->addressStart), (Vector2){ p->pos.x+2+p->size.x, p->pos.y+14 }, font.baseSize, 0, WHITE);
+        }*/
+        if (p->addressStart==0 || !p->name[0]) {
+          sprintf(buff,"%s",p->name);
+        } else {
+          sprintf(buff,"%s @ %X",p->name,p->addressStart);
         }
+        DrawTextEx(font, buff, (Vector2){ p->pos.x+2, p->pos.y-font.baseSize }, font.baseSize, 0, WHITE);
+
       }
     }
  
