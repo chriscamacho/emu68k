@@ -31,8 +31,7 @@ start:
 
     move.l    #frameMess,A0      
     moveq     #7,D0
-    moveq     #56,D1
-
+    moveq     #55,D1
 
     jsr       print4            ; print the modified message
   
@@ -54,21 +53,36 @@ start:
     jsr       print4            ; print it
     
 
-    moveq     #1,d2
-lineLoop:
-    move.b    d2,(posx)
-    move.b    d2,(posy)
-    moveq     #0,d0
-    moveq     #0,d1
+;    moveq     #1,d2
+;lineLoop:
+;    move.b    d2,(posx)
+;    move.b    d2,(posy)
+;    moveq     #0,d0
+;    moveq     #0,d1
+;    move.b    (posx),d0
+;    move.b    (posy),d1
+;    jsr       plot
+    
+;    add.b     #1,d2
+;    cmp.b     #32,d2
+;    blt       lineLoop
+    
+
+ 
+    
+
+    moveq      #0,d0
     move.b    (posx),d0
-    move.b    (posy),d1
-    jsr       plot
+    add.b     #1,d0
+    cmp.b     #119,d0
+    bne       xok
+    move.b    #0,d0
+xok:
+    move.b    d0,(posx)
     
-    add.b     #1,d2
-    cmp.b     #32,d2
-    blt       lineLoop
-    
-    
+
+    moveq     #20,d1
+    jsr       sprite
     
 
 ; bottom of main loop wait for "vbl", clear screen
@@ -80,14 +94,6 @@ waitforit:
     move.b    ($B0000),D6
     cmp.b     D5,D6
     beq       waitforit
-
-
-
-
-
-
-
-
 
 ; clear the frame buffer
     move.l    #FBUF,A0
@@ -139,7 +145,7 @@ putAok:
 ; d1 y      y coord in lines
 ; A0        address of string    
 print4:
-    movem.l   d3-d6/a1-a2,-(sp)
+    movem.l   d3-d7/a1-a2,-(sp)
     
     move.l    #FBUF,A2
     move.l    #font4x8,A1
@@ -168,9 +174,6 @@ print42ok:
     lsl.w     #3,D4             ; 8 lines per char
  
 
-    
-    
-    
     move.b    0(A1,D3.w),D5     ; left of pair
     move.b    0(A1,D4.w),D6     ; right of pair
     lsl.b     #4,D5
@@ -219,16 +222,17 @@ print42ok:
     or.b      D5,D6
     move.b    D6,112(A2,D0.w)
 
-    ;cmp       #0,d4
-    ;beq       donePrint4
+    cmp       #0,d4             ; was right of pair at message end
+    beq       donePrint4
     
     add.l     #1,D0 ; destination offset
 
     bra.w     print4loop
 donePrint4:
-    movem.l   (sp)+,d3-d6/a1-a2 
+    movem.l   (sp)+,d3-d7/a1-a2 
     rts
-    
+
+  
 plot:
     movem.l   d2-d4/a0,-(sp)
     move.l    #FBUF,A0
@@ -245,6 +249,96 @@ plot:
     rts
 
 
+smile:
+    dc.b	%00111100
+    dc.b	%01000010
+    dc.b	%10100101
+    dc.b	%10000001
+    dc.b	%10100101
+    dc.b	%10011001
+    dc.b	%01000010
+    dc.b	%00111100  
+    
+sprite:
+    movem.l   d2-d4/a1,-(sp)
+    move.l    #FBUF,a0
+    move.l    #smile,a1
+    
+    ;sub.b    #1,d0
+    
+    moveq     #0,d2
+    moveq     #8,d3
+    move.b    d0,d2
+    and.b     #7,d2
+    sub.b     d2,d3
+
+    
+   
+    lsr.b     #3,d0
+    lsl.w     #4,d1
+    add.w     d1,d0
+
+    move.b    (a1),d4
+    lsr.b     d2,d4
+    move.b    d4,0(a0,d0)
+    move.b    (a1)+,d4
+    lsl.b     d3,d4
+    move.b    d4,1(a0,d0)
+
+    move.b    (a1),d4
+    lsr.b     d2,d4
+    move.b    d4,16(a0,d0)
+    move.b    (a1)+,d4
+    lsl.b     d3,d4
+    move.b    d4,17(a0,d0)
+
+    move.b    (a1),d4
+    lsr.b     d2,d4
+    move.b    d4,32(a0,d0)
+    move.b    (a1)+,d4
+    lsl.b     d3,d4
+    move.b    d4,33(a0,d0)
+
+    move.b    (a1),d4
+    lsr.b     d2,d4
+    move.b    d4,48(a0,d0)
+    move.b    (a1)+,d4
+    lsl.b     d3,d4
+    move.b    d4,49(a0,d0)
+
+    move.b    (a1),d4
+    lsr.b     d2,d4
+    move.b    d4,64(a0,d0)
+    move.b    (a1)+,d4
+    lsl.b     d3,d4
+    move.b    d4,65(a0,d0)
+
+    move.b    (a1),d4
+    lsr.b     d2,d4
+    move.b    d4,80(a0,d0)
+    move.b    (a1)+,d4
+    lsl.b     d3,d4
+    move.b    d4,81(a0,d0)
+
+    move.b    (a1),d4
+    lsr.b     d2,d4
+    move.b    d4,96(a0,d0)
+    move.b    (a1)+,d4
+    lsl.b     d3,d4
+    move.b    d4,97(a0,d0)
+
+    move.b    (a1),d4
+    lsr.b     d2,d4
+    move.b    d4,112(a0,d0)
+    move.b    (a1)+,d4
+    lsl.b     d3,d4
+    move.b    d4,113(a0,d0)
+
+
+    
+    movem.l   (sp)+,d2-d4/a1
+    rts    
+
     ; variables
 frame:
     dc.l      0
@@ -252,15 +346,21 @@ score:
     dc.w      0
 scoreInc:
     dc.w      1
+    
 posx:
     dc.b      3
 posy:
     dc.b      4
     
+mx:
+    dc.b      1
+my:
+    dc.b      1
+
     even
         
 scoreMess:
-    dc.b    "Score:"
+    dc.b    "Score: "
 scoreInsert:
     dc.b    "----",0,0
     even
