@@ -59,7 +59,7 @@ typedef struct {
 	Vector2 pos;
 	Vector2 size;
 
-  void* memPtr;   // pointer to ram some UI plugins need to spy on memory, "device" plugins shouldn't!
+  byte* memPtr;   // pointer to ram some UI plugins need to spy on memory, "device" plugins shouldn't!
   unsigned int RamSize;
 
   

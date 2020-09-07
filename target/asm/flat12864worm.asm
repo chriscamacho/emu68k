@@ -12,34 +12,14 @@ JOY     EQU   $C0000        ; keyboard joystick
     
 
 start:
-    nop
-    nop
-    nop
-    nop
-    add     #1,d1
-    ;bra     start
-    
-    add     #3,d0
-loop:
-    nop
-    add     #1,d1
-    nop
-    dbra      d0,loop
-    
-    nop
-    nop
-    
-    
+   
 ; deliberate address error
-    move.l    #1001,a0
-    move.w    #0,(a0)
+;    move.l    #$FE00000,a0
+;    move.w    #0,(a0)
     
-; deliberate bus error
-    move.l    #$fffffffe,a0
-    move.w    #0,(a0)
-
-
-    bra       start
+; deliberate bus error        ; TODO not quite right....!
+;    move.l    #insert+1,a0
+;    move.w    (a0),d0
 
     addq.l    #1,(frame)        ; increment the frame counter
 

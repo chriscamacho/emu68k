@@ -109,7 +109,8 @@ void setRunning(bool run) {
   } else {
     emuRun  = false;
     emuStep = false;
-    emuSkip = false;    
+    emuSkip = false; 
+    m68k_end_timeslice();   
   }
 }
 
@@ -403,7 +404,7 @@ int main(int argc, char* argv[])
       //m68k_pulse_bus_error();
       setRunning(false);
       
-      snprintf(nextlog(),80,"ERROR bus error, access not handled %08X",pc);
+      snprintf(nextlog(),80,"ERROR bus error, access not handled %08X (>%08X)",pc,RAMSIZE);
     } else {
 
       for (GList* l = plugins; l != NULL; l = l->next) {
@@ -436,6 +437,7 @@ int main(int argc, char* argv[])
  
     EndDrawing();
     //----------------------------------------------------------------------------------
+    
   }
 
   CloseWindow();
@@ -496,7 +498,9 @@ unsigned int m68k_read_memory_8(unsigned int address)
     snprintf(nextlog(),80,"%08X : 8 bit read at %08X, %02X", cycles, address, mem[address]);
     return mem[address];
   }
-  snprintf(nextlog(),80,"ERROR bus error, access not handled %08X",address);
+  
+  snprintf(nextlog(),80,"r8 ERROR bus error, access not handled %08X",address);
+  setRunning(false);
   return 0xff;
 }
 
@@ -507,7 +511,8 @@ unsigned int m68k_read_memory_16(unsigned int address)
     snprintf(nextlog(),80,"%08X : 16 bit read at %08X, %04X", cycles, address, mem[address]<<8 | mem[address+1]);
     return mem[address]<<8 | mem[address+1];
   }
-  snprintf(nextlog(),80,"ERROR bus error, access not handled %08X",address);
+  snprintf(nextlog(),80,"r16 ERROR bus error, access not handled %08X",address);
+  setRunning(false);
   return 0xffff;
 }
 
@@ -518,7 +523,8 @@ unsigned int m68k_read_memory_32(unsigned int address)
     snprintf(nextlog(),80,"%08X : 32 bit read at %08X, %08X", cycles, address, mem[address]<<24 | mem[address+1]<<16 | mem[address+2]<<8 | mem[address+3]);
     return mem[address]<<24 | mem[address+1]<<16 | mem[address+2]<<8 | mem[address+3];
   }
-  snprintf(nextlog(),80,"ERROR bus error, access not handled %08X",address);
+  snprintf(nextlog(),80,"r32 RROR bus error, access not handled %08X",address);
+  setRunning(false);
   return 0xffffffff;
 }
 
@@ -540,7 +546,8 @@ void m68k_write_memory_8(unsigned int address, unsigned int value)
       }
     } 
   } else {
-    snprintf(nextlog(),80,"ERROR bus error, access not handled %08X",address);
+    snprintf(nextlog(),80,"w8 ERROR bus error, access not handled %08X",address);
+    setRunning(false);
   }
 }
 
@@ -552,7 +559,8 @@ void m68k_write_memory_16(unsigned int address, unsigned int value)
     mem[address+1] = (value)    & 0xff;
     snprintf(nextlog(),80,"%08X : 16 bit write at %08X, %04X", cycles, address, value&0xffff);
   } else {
-    snprintf(nextlog(),80,"ERROR bus error, access not handled %08X",address);
+    setRunning(false);
+    snprintf(nextlog(),80,"w16 ERROR bus error, access not handled %08X",address);
   }
 }
 
@@ -566,6 +574,7 @@ void m68k_write_memory_32(unsigned int address, unsigned int value)
     mem[address+3] = (value)     & 0xff;
     snprintf(nextlog(),80,"%08X : 32 bit write at %08X, %08X", cycles, address, value&0xffffffff);
   } else {
-    snprintf(nextlog(),80,"ERROR bus error, access not handled %08X",address);
+    setRunning(false);
+    snprintf(nextlog(),80,"w32 ERROR bus error, access not handled %08X",address);
   }
 }

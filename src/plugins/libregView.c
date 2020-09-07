@@ -91,7 +91,7 @@ G_MODULE_EXPORT void draw(void* inst)
           if (v!=vars->last[i]) sprintf(vars->regStr[i],"%08X",v);
           m68k_set_reg(M68K_REG_D0 + i, v);
           vars->last[i]=v;
-          printf("v=%08x\n",v);
+          //printf("v=%08x\n",v);
         }
       }
       if (GuiTextBox((Rectangle){ 161, 4+i*20, 92, 18}, vars->regStr[i+8], 9, vars->editing[i+8])) {
@@ -101,13 +101,25 @@ G_MODULE_EXPORT void draw(void* inst)
           if (v!=vars->last[i+8]) sprintf(vars->regStr[i+8],"%08X",v);
           m68k_set_reg(M68K_REG_D0 + i+8, v);
           vars->last[i+8]=v;
-          printf("v=%08x\n",v);
+          //printf("v=%08x\n",v);
         }
       }
       GuiLabel((Rectangle){ 2, 4+i*20, 127, 22}, FormatText("D%i",i));
       GuiLabel((Rectangle){ 129, 4+i*20, 64, 22}, FormatText("A%i",i,vars->regs[i+8]));
     }
-    GuiLabel((Rectangle){ 2, 4+8.25*20, 127, 22}, FormatText("PC %08X",vars->regs[M68K_REG_PC]));
+    //GuiLabel((Rectangle){ 2, 4+8.25*20, 127, 22}, FormatText("PC %08X",vars->regs[M68K_REG_PC]));
+    if (GuiTextBox((Rectangle){ 2, 4+8.25*20, 127, 22}, vars->regStr[M68K_REG_PC], 9, vars->editing[M68K_REG_PC])) {
+      vars->editing[M68K_REG_PC]=!vars->editing[M68K_REG_PC];
+      if (!vars->editing[M68K_REG_PC]) {
+        unsigned int v = strtoul(vars->regStr[M68K_REG_PC], NULL, 16);
+        if (v!=vars->last[M68K_REG_PC]) sprintf(vars->regStr[M68K_REG_PC],"%08X",v);
+        m68k_set_reg(M68K_REG_PC, v);
+        vars->last[M68K_REG_PC]=v;
+        printf("v=%08x\n",v);
+      }
+    }
+
+    // want to do a bit editor for SR...
     GuiLabel((Rectangle){ 129, 4+8.25*20, 64, 22}, FormatText("SR %02X",vars->regs[M68K_REG_SR]));
     GuiLabel((Rectangle){ 129, 4+9.25*20, 64, 22}, srs);
     

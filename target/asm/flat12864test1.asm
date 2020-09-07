@@ -56,13 +56,13 @@ donePrint8x:
     
     move.w    (ypos),D1         ; get the ypos
     addi.w    #1,D1             ; add 1
-    cmp.w     #56,D1            ; if >56
+    cmp.w     #23,D1            ; if >56
     ble       yok
     moveq.w   #0,D1             ; reset to 0
 yok:
     move.w    D1,ypos           ; save ypos
 
-    lsl.w     #4,D1
+    lsl.w     #5,D1
     add.w     D1,D0             ; screen offset in D0
 
     move.l    #message2,A2        ; start of message in A2
@@ -71,7 +71,7 @@ print4:
     moveq     #0,D1
     move.b    (A2)+,D1          ; D1 next char to print
     cmp.b     #0,D1             ; is it a zero character
-    beq.w     donePrint4       ; if so message complete!
+    beq      donePrint4       ; if so message complete!
     sub.b     #32,D1            ; char data starts at ascii 32
     lsl.w     #3,D1             ; 8 lines per char
     moveq     #0,D2
@@ -88,49 +88,51 @@ print42ok:
     move.b    0(A1,D2.w),D4     ; right of pair
     lsl.b     #4,D3
     or.b      D3,D4
-    move.b    D4,0(A0,D0.w)
+    or.b    d4,0(A0,D0.w)
+    
+    
     
     move.b    1(A1,D1.w),D3     ; left of pair
     move.b    1(A1,D2.w),D4     ; right of pair
     lsl.b     #4,D3
     or.b      D3,D4
-    move.b    D4,16(A0,D0.w)
+    or.b    d4,16(A0,D0.w)
     
     move.b    2(A1,D1.w),D3     ; left of pair
     move.b    2(A1,D2.w),D4     ; right of pair
     lsl.b     #4,D3
     or.b      D3,D4
-    move.b    D4,32(A0,D0.w)
+    or.b    d4,32(A0,D0.w)
     
     move.b    3(A1,D1.w),D3     ; left of pair
     move.b    3(A1,D2.w),D4     ; right of pair
     lsl.b     #4,D3
     or.b      D3,D4
-    move.b    D4,48(A0,D0.w)
+    or.b      d4,48(A0,D0.w)
     
     move.b    4(A1,D1.w),D3     ; left of pair
     move.b    4(A1,D2.w),D4     ; right of pair
     lsl.b     #4,D3
     or.b      D3,D4
-    move.b    D4,64(A0,D0.w)
+    or.b    D4,64(A0,D0.w)
     
     move.b    5(A1,D1.w),D3     ; left of pair
     move.b    5(A1,D2.w),D4     ; right of pair
     lsl.b     #4,D3
     or.b      D3,D4
-    move.b    D4,80(A0,D0.w)
+    or.b    D4,80(A0,D0.w)
     
     move.b    6(A1,D1.w),D3     ; left of pair
     move.b    6(A1,D2.w),D4     ; right of pair
     lsl.b     #4,D3
     or.b      D3,D4
-    move.b    D4,96(A0,D0.w)
+    or.b    D4,96(A0,D0.w)
     
     move.b    7(A1,D1.w),D3     ; left of pair
     move.b    7(A1,D2.w),D4     ; right of pair
     lsl.b     #4,D3
     or.b      D3,D4
-    move.b    D4,112(A0,D0.w)
+    or.b    D4,112(A0,D0.w)
 
     
     add.l     #1,D0 ; destination offset
@@ -138,13 +140,20 @@ print42ok:
     bra.w     print4
 donePrint4:
 
+
+    moveq    #3,d7
 ; wait for the VBL plugin to change
 ; this is like waiting for a vertical blank...
+wl:
     move.b    ($B0000),D5
 waitforit:
     move.b    ($B0000),D6
     cmp.b     D5,D6
     beq       waitforit
+
+    dbra      d7,wl
+
+
 
 ; clear the frame buffer
 cls:
@@ -155,7 +164,7 @@ clsloop:                        ; TODO !
 
 ; frame++    
     move.l    (frame),D7
-    addq.l    #1,D7
+    addq.l    #4,D7
     move.l    D7,(frame)
 
 ; put the frame value into the ascii message
