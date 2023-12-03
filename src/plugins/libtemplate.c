@@ -15,7 +15,7 @@
 
 
 typedef struct {
-	byte val;				// to save the effects of writes
+    byte val;               // to save the effects of writes
 } templateVars;
 
 
@@ -30,8 +30,8 @@ G_MODULE_EXPORT void initialise(void* inst)
   pl->outTx = LoadRenderTexture(pl->size.x, pl->size.y);  // plugin should only draw on this
   if (pl->plug->resTx.id==0) pl->plug->resTx = LoadTexture("resources/template.png");  // single resource
  
-  SetTextureFilter(pl->outTx.texture, FILTER_BILINEAR); 
-  SetTextureFilter(pl->plug->resTx, FILTER_BILINEAR);  // Texture scale filter to use
+  SetTextureFilter(pl->outTx.texture, TEXTURE_FILTER_BILINEAR); 
+  SetTextureFilter(pl->plug->resTx, TEXTURE_FILTER_BILINEAR);  // Texture scale filter to use
 
   // clear out / initialize anything in vars like strings etc
   vars->val = 0;
@@ -53,14 +53,14 @@ G_MODULE_EXPORT void setProperty(void* inst, char* prop, void* value)
 // This function can access the UI
 G_MODULE_EXPORT void draw(void* inst) 
 {
-	// rendering takes place on plugin instances render texture.
+    // rendering takes place on plugin instances render texture.
   plugInstStruct* pl = (plugInstStruct*)inst;
   templateVars* vars = ((templateVars*)pl->data);
 
   BeginTextureMode(pl->outTx);
     ClearBackground(BLANK);
     DrawTexture(pl->plug->resTx, 0,0, WHITE);
-    DrawText(FormatText("%02X",vars->val), 28, 48, 20, BLACK);
+    DrawText(TextFormat("%02X",vars->val), 28, 48, 20, BLACK);
   EndTextureMode();
 }
 
@@ -76,14 +76,14 @@ G_MODULE_EXPORT int getAddressSize() { return 1; }
 // we don't need to check range check it
 G_MODULE_EXPORT byte getAddress(void* inst, int address) 
 {
-	plugInstStruct* pl = (plugInstStruct*)inst;
+    plugInstStruct* pl = (plugInstStruct*)inst;
   templateVars* vars = ((templateVars*)pl->data); 
-	return vars->val;
+    return vars->val;
 }
 
 G_MODULE_EXPORT void setAddress(void* inst, int address, byte data) 
 {
-	plugInstStruct* pl = (plugInstStruct*)inst;
+    plugInstStruct* pl = (plugInstStruct*)inst;
   templateVars* vars = ((templateVars*)pl->data); 
-	vars->val = data;
+    vars->val = data;
 }

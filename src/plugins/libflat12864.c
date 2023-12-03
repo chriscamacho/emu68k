@@ -18,8 +18,8 @@
 
 
 typedef struct {
-	Image screenImage;
-	Texture screenTexture;
+    Image screenImage;
+    Texture screenTexture;
 } flat12864Vars;
 
 
@@ -34,12 +34,12 @@ G_MODULE_EXPORT void initialise(void* inst)
   pl->outTx = LoadRenderTexture(pl->size.x, pl->size.y);  // plugin should only draw on this
   if (pl->plug->resTx.id==0) pl->plug->resTx = LoadTexture("resources/lcd-grid.png");  // single resource
  
-  SetTextureFilter(pl->outTx.texture, FILTER_BILINEAR); 
-  SetTextureFilter(pl->plug->resTx, FILTER_BILINEAR);  // Texture scale filter to use
+  SetTextureFilter(pl->outTx.texture, TEXTURE_FILTER_BILINEAR); 
+  SetTextureFilter(pl->plug->resTx, TEXTURE_FILTER_BILINEAR);  // Texture scale filter to use
 
   // clear out / initialize anything in vars like strings etc
   vars->screenImage = GenImageColor(128, 64, WHITE);
-  ImageFormat(&vars->screenImage, UNCOMPRESSED_GRAYSCALE);
+  ImageFormat(&vars->screenImage, PIXELFORMAT_UNCOMPRESSED_GRAYSCALE);
   
   vars->screenTexture = LoadTextureFromImage(vars->screenImage);
   
@@ -52,7 +52,7 @@ G_MODULE_EXPORT void setProperty(void* inst, char* prop, void* value) { }
 // This function can access the UI
 G_MODULE_EXPORT void draw(void* inst) 
 {
-	// rendering takes place on plugin instances render texture.
+    // rendering takes place on plugin instances render texture.
   plugInstStruct* pl = (plugInstStruct*)inst;
   flat12864Vars* vars = ((flat12864Vars*)pl->data);
 
@@ -78,7 +78,7 @@ G_MODULE_EXPORT byte getAddress(void* inst, int address)
 {
   // pack 8 pixels back into a byte
   
-	plugInstStruct* pl = (plugInstStruct*)inst;
+    plugInstStruct* pl = (plugInstStruct*)inst;
 /*  flat12864Vars* vars = ((flat12864Vars*)pl->data);
   unsigned short a = (address-pl->addressStart) >> 3;
   byte* p = (byte*)vars->screenImage.data;
@@ -96,17 +96,17 @@ G_MODULE_EXPORT byte getAddress(void* inst, int address)
   }
 printf("\n");
 */
-	return pl->memPtr[address];
+    return pl->memPtr[address];
 }
 
 G_MODULE_EXPORT void setAddress(void* inst, int address, byte data) 
 {
   // each bit effects a different pixel
-	plugInstStruct* pl = (plugInstStruct*)inst;
+    plugInstStruct* pl = (plugInstStruct*)inst;
   flat12864Vars* vars = ((flat12864Vars*)pl->data); 
   byte* p = (byte*)vars->screenImage.data;
   unsigned int a = address - pl->addressStart;
-	a = a << 3; // 8 px a byte
+    a = a << 3; // 8 px a byte
 
   for(int i=0; i<8; i++) {
     if (data & (1 << (7-i)) ) {

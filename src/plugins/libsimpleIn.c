@@ -7,25 +7,25 @@
 
 
 typedef struct {
-	byte val;
-	char bitNames[8][16];
+    byte val;
+    char bitNames[8][16];
 } simpleInVars;
 
 
 
 G_MODULE_EXPORT void initialise(void* inst) //, Vector2 at, Font fnt) 
 {
-	
+    
   plugInstStruct* pl = (plugInstStruct*)inst;
   pl->data = malloc(sizeof(simpleInVars));
   simpleInVars* vars = ((simpleInVars*)pl->data);
   pl->size = (Vector2){256,64};
   pl->outTx = LoadRenderTexture(pl->size.x, pl->size.y);
-  SetTextureFilter(pl->outTx.texture, FILTER_BILINEAR); 
+  SetTextureFilter(pl->outTx.texture, TEXTURE_FILTER_BILINEAR); 
   if (pl->plug->resTx.id==0) pl->plug->resTx = LoadTexture("resources/switch.png");
-  SetTextureFilter(pl->plug->resTx, FILTER_BILINEAR);  // Texture scale filter to use
+  SetTextureFilter(pl->plug->resTx, TEXTURE_FILTER_BILINEAR);  // Texture scale filter to use
 
-	vars->val = 0x00;
+    vars->val = 0x00;
   for(int i=0; i<8; i++) {
     vars->bitNames[i][0]=0;
   }
@@ -46,7 +46,7 @@ G_MODULE_EXPORT void setProperty(void* inst, char* prop, void* value)
 // This function can access the UI
 G_MODULE_EXPORT void draw(void* inst) 
 {
-	// rendering takes place on plugin instances render texture.
+    // rendering takes place on plugin instances render texture.
   plugInstStruct* pl = (plugInstStruct*)inst;
   simpleInVars* vars = ((simpleInVars*)pl->data);
   BeginTextureMode(pl->outTx);
@@ -60,9 +60,9 @@ G_MODULE_EXPORT void draw(void* inst)
     }
   }
   for (int i=0; i<8; i++) {
-    DrawTextEx(pl->plug->font, FormatText("%s",vars->bitNames[7-i]), (Vector2){ i*32+2, 28 }, 22, 2, WHITE);
+    DrawTextEx(pl->plug->font, TextFormat("%s",vars->bitNames[7-i]), (Vector2){ i*32+2, 28 }, 22, 2, WHITE);
   }
-  DrawTextEx(pl->plug->font, FormatText("%02X ",vars->val), (Vector2){ 120, 12 }, 20, 2, WHITE);
+  DrawTextEx(pl->plug->font, TextFormat("%02X ",vars->val), (Vector2){ 120, 12 }, 20, 2, WHITE);
   EndTextureMode();
 }
 
@@ -72,15 +72,15 @@ G_MODULE_EXPORT void clicked(void* inst, int x, int y)
 {
   plugInstStruct* pl = (plugInstStruct*)inst;
   simpleInVars* vars = ((simpleInVars*)pl->data);
-	// check if a button area is hit & update val
-	Vector2 pos = pl->pos;
-	Vector2 sz = pl->size;
-	if (x > pos.x && x < pos.x + sz.x && y > pos.y && y < pos.y + sz.y)
-	{
-		int p = x- pos.x;
-		p = 7-(p >> 5);
-		vars->val = vars->val ^ (1 << p);  // xor to toggle
-	}	
+    // check if a button area is hit & update val
+    Vector2 pos = pl->pos;
+    Vector2 sz = pl->size;
+    if (x > pos.x && x < pos.x + sz.x && y > pos.y && y < pos.y + sz.y)
+    {
+        int p = x- pos.x;
+        p = 7-(p >> 5);
+        vars->val = vars->val ^ (1 << p);  // xor to toggle
+    }   
 }
 
 // TODO put in plugInstStruct set in initialise
@@ -90,9 +90,9 @@ G_MODULE_EXPORT int getAddressSize() { return 1; }
 // we don't need to check it (only 1 byte)
 G_MODULE_EXPORT byte getAddress(void* inst, int address) 
 {
-	plugInstStruct* pl = (plugInstStruct*)inst;
+    plugInstStruct* pl = (plugInstStruct*)inst;
     simpleInVars* vars = ((simpleInVars*)pl->data); 
-	return vars->val;
+    return vars->val;
 }
 
 G_MODULE_EXPORT void setAddress(void* inst, int address, byte data) {  }

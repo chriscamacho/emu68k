@@ -19,7 +19,7 @@ void integratePlugin(pluginStruct *plugin)
 
     module_path = g_module_build_path((const gchar *) plug , plugin->libName);
 
-    //g_print("Module path: %s\n", module_path);
+    g_print("Module path: %s\n", module_path);
 
     plugin->module = g_module_open ( module_path , G_MODULE_BIND_LOCAL);
     if (!plugin->module) {

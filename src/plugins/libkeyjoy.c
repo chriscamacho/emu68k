@@ -7,24 +7,24 @@
 // TODO allow changing of keycodes via setProperty
 
 typedef struct {
-	byte val;
+    byte val;
 } keyJoyVars;
 
 
 
 G_MODULE_EXPORT void initialise(void* inst)
 {
-	
+    
   plugInstStruct* pl = (plugInstStruct*)inst;
   pl->data = malloc(sizeof(keyJoyVars));
   keyJoyVars* vars = ((keyJoyVars*)pl->data);
   pl->size = (Vector2){64,64};
   pl->outTx = LoadRenderTexture(pl->size.x, pl->size.y);
-  SetTextureFilter(pl->outTx.texture, FILTER_BILINEAR); 
+  SetTextureFilter(pl->outTx.texture, TEXTURE_FILTER_BILINEAR); 
   if (pl->plug->resTx.id==0) pl->plug->resTx = LoadTexture("resources/template.png");
-  SetTextureFilter(pl->plug->resTx, FILTER_BILINEAR);  // Texture scale filter to use
+  SetTextureFilter(pl->plug->resTx, TEXTURE_FILTER_BILINEAR);  // Texture scale filter to use
 
-	vars->val = 0x00;
+    vars->val = 0x00;
 
 }
 
@@ -33,7 +33,7 @@ G_MODULE_EXPORT void setProperty(void* inst, char* prop, void* value) { }
 // This function can access the UI
 G_MODULE_EXPORT void draw(void* inst) 
 {
-	// rendering takes place on plugin instances render texture.
+    // rendering takes place on plugin instances render texture.
   plugInstStruct* pl = (plugInstStruct*)inst;
   keyJoyVars* vars = ((keyJoyVars*)pl->data);
   
@@ -52,7 +52,7 @@ G_MODULE_EXPORT void draw(void* inst)
   ClearBackground(BLANK);
   DrawTexture(pl->plug->resTx, 0,0, WHITE);
 
-  DrawTextEx(pl->plug->font, FormatText("%02X ",vars->val), (Vector2){ 28, 48 }, 20, 2, BLACK);
+  DrawTextEx(pl->plug->font, TextFormat("%02X ",vars->val), (Vector2){ 28, 48 }, 20, 2, BLACK);
   EndTextureMode();
 }
 
@@ -67,9 +67,9 @@ G_MODULE_EXPORT int getAddressSize() { return 1; }
 // we don't need to check it (only 1 byte)
 G_MODULE_EXPORT byte getAddress(void* inst, int address) 
 {
-	plugInstStruct* pl = (plugInstStruct*)inst;
+    plugInstStruct* pl = (plugInstStruct*)inst;
   keyJoyVars* vars = ((keyJoyVars*)pl->data); 
-	return vars->val;
+    return vars->val;
 }
 
 G_MODULE_EXPORT void setAddress(void* inst, int address, byte data) {  }

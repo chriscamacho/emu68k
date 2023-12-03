@@ -31,7 +31,7 @@ G_MODULE_EXPORT void initialise(void* inst)
   pl->size = (Vector2){550,124};    // size is always the same for all instances
   pl->outTx = LoadRenderTexture(pl->size.x, pl->size.y);  // plugin should only draw on this
   
-  SetTextureFilter(pl->outTx.texture, FILTER_BILINEAR); 
+  SetTextureFilter(pl->outTx.texture, ICON_FILTER_BILINEAR); 
 
   // clear out / initialize anything in vars like strings etc
 
@@ -46,7 +46,7 @@ G_MODULE_EXPORT void setProperty(void* inst, char* prop, void* value) { }
 // This function can access the UI
 G_MODULE_EXPORT void draw(void* inst) 
 {
-	// rendering takes place on plugin instances render texture.
+    // rendering takes place on plugin instances render texture.
   plugInstStruct* pl = (plugInstStruct*)inst;
   //codeViewVars* vars = ((codeViewVars*)pl->data);
   
@@ -62,7 +62,7 @@ G_MODULE_EXPORT void draw(void* inst)
         int instr_size = m68k_disassemble(buff, pc, M68K_CPU_TYPE_68000);
         make_hex(buff2, pl->memPtr, pc, pl->RamSize, instr_size);
         GuiSetStyle(LABEL, TEXT_COLOR_NORMAL, 0xffff00ff);
-        GuiLabel((Rectangle){ 8, 4, 127, 18}, FormatText("%08X:%-15s:%s", pc, buff2, buff));
+        GuiLabel((Rectangle){ 8, 4, 127, 18}, TextFormat("%08X:%-15s:%s", pc, buff2, buff));
         GuiSetStyle(LABEL, TEXT_COLOR_NORMAL, 0xffffffff);
         
         for (int i=0;i<5;i++) {
@@ -70,7 +70,7 @@ G_MODULE_EXPORT void draw(void* inst)
           instr_size = m68k_disassemble(buff, pc, M68K_CPU_TYPE_68000);
           make_hex(buff2, pl->memPtr, pc, pl->RamSize, instr_size);
 
-          GuiLabel((Rectangle){ 8, 24+i*20, 127, 15}, FormatText("%08X:%-15s:%s", pc, buff2, buff));
+          GuiLabel((Rectangle){ 8, 24+i*20, 127, 22}, TextFormat("%08X:%-15s:%s", pc, buff2, buff));
 
         }
 

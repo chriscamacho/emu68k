@@ -291,8 +291,7 @@ int main(int argc, char* argv[])
 
   font = LoadFontEx("resources/SpaceMono-Bold.ttf", 22, 0, 250);
   printf("font size: %i\n",font.baseSize);
-
-
+  GuiSetStyle(DEFAULT, TEXT_SIZE, 22);
   
   // XML machine loader
   
@@ -342,8 +341,8 @@ int main(int argc, char* argv[])
   GuiSetStyle(TEXTBOX,        TEXT_COLOR_PRESSED,       ColorToInt(BLACK));
   GuiSetStyle(TEXTBOX,        TEXT_COLOR_PRESSED,       ColorToInt(WHITE));
   GuiSetStyle(TEXTBOX,        BASE_COLOR_PRESSED,       ColorToInt(BLACK));
-  GuiSetStyle(TEXTBOX,        TEXT_INNER_PADDING,       0);
-  GuiSetStyle(DROPDOWNBOX,    DROPDOWN_ITEMS_PADDING,   -1);
+  GuiSetStyle(TEXTBOX,        TEXT_LINE_SPACING,        0);
+  GuiSetStyle(DROPDOWNBOX,    DROPDOWN_ITEMS_SPACING,   -1);
   GuiSetStyle(DROPDOWNBOX,    BORDER_WIDTH,             0);
   
 //  GuiSetStyle(TEXTBOX, TEXT_ALIGNMENT, GUI_TEXT_ALIGN_CENTER);
@@ -415,15 +414,17 @@ int main(int argc, char* argv[])
         if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) pl->clicked(p, GetMouseX(), GetMouseY());
       
         // then draw...
+        
+        
         pl->draw(p); // draw to the render texture
         DrawTextureRec(p->outTx.texture,(Rectangle){0, 0, p->size.x, -p->size.y },(Vector2){p->pos.x, p->pos.y}, WHITE);
         
         /*
         if (p->addressStart==0){
-          DrawTextEx(font, FormatText("%s", p->name), (Vector2){ p->pos.x+16, p->pos.y-font.baseSize }, font.baseSize, 0, WHITE);
+          DrawTextEx(font, TextFormat("%s", p->name), (Vector2){ p->pos.x+16, p->pos.y-font.baseSize }, font.baseSize, 0, WHITE);
         } else {
-          DrawTextEx(font, FormatText("%s", p->name), (Vector2){ p->pos.x+2+p->size.x, p->pos.y-4 }, font.baseSize, 0, WHITE);
-          DrawTextEx(font, FormatText("%X", p->addressStart), (Vector2){ p->pos.x+2+p->size.x, p->pos.y+14 }, font.baseSize, 0, WHITE);
+          DrawTextEx(font, TextFormat("%s", p->name), (Vector2){ p->pos.x+2+p->size.x, p->pos.y-4 }, font.baseSize, 0, WHITE);
+          DrawTextEx(font, TextFormat("%X", p->addressStart), (Vector2){ p->pos.x+2+p->size.x, p->pos.y+14 }, font.baseSize, 0, WHITE);
         }*/
         if (p->addressStart==0 || !p->name[0]) {
           sprintf(buff,"%s",p->name);

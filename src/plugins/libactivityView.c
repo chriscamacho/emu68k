@@ -29,7 +29,7 @@ G_MODULE_EXPORT void initialise(void* inst)
   pl->size = (Vector2){512,360};    // size is always the same for all instances
   pl->outTx = LoadRenderTexture(pl->size.x, pl->size.y);  // plugin should only draw on this
   
-  SetTextureFilter(pl->outTx.texture, FILTER_BILINEAR); 
+  SetTextureFilter(pl->outTx.texture, TEXTURE_FILTER_BILINEAR); 
 
   // clear out / initialize anything in vars like strings etc
 
@@ -48,7 +48,7 @@ G_MODULE_EXPORT void setProperty(void* inst, char* prop, void* value)
 // This function can access the UI
 G_MODULE_EXPORT void draw(void* inst) 
 {
-	// rendering takes place on plugin instances render texture.
+    // rendering takes place on plugin instances render texture.
   plugInstStruct* pl = (plugInstStruct*)inst;
   activityViewVars* vars = ((activityViewVars*)pl->data);
 

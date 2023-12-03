@@ -42,7 +42,7 @@ G_MODULE_EXPORT void initialise(void* inst)
   pl->size = (Vector2){496,166};    // size is always the same for all instances
   pl->outTx = LoadRenderTexture(pl->size.x, pl->size.y);  // plugin should only draw on this
   
-  SetTextureFilter(pl->outTx.texture, FILTER_BILINEAR); 
+  SetTextureFilter(pl->outTx.texture, TEXTURE_FILTER_BILINEAR); 
 
   // clear out / initialize anything in vars like strings etc
   vars->ddDdone = false;
@@ -67,7 +67,7 @@ G_MODULE_EXPORT void setProperty(void* inst, char* prop, void* value)
 // This function can access the UI
 G_MODULE_EXPORT void draw(void* inst) 
 {
-	// rendering takes place on plugin instances render texture.
+    // rendering takes place on plugin instances render texture.
   plugInstStruct* pl = (plugInstStruct*)inst;
   memViewVars* vars = ((memViewVars*)pl->data);
   SetMouseOffset(-pl->pos.x, -pl->pos.y);
@@ -83,7 +83,7 @@ G_MODULE_EXPORT void draw(void* inst)
       GuiLabel((Rectangle){ 98, 2, 254, 16}, "+");
       GuiLabel((Rectangle){ 176, 2, 254, 16}, "+");
 
-      GuiLabel((Rectangle){ 258, 2, 254, 16}, FormatText("= %08X",tos));
+      GuiLabel((Rectangle){ 258, 2, 254, 16}, TextFormat("= %08X",tos));
 
 
       
@@ -95,9 +95,9 @@ G_MODULE_EXPORT void draw(void* inst)
         } else {
           GuiSetStyle(LABEL, TEXT_COLOR_NORMAL, 0xffffffff);
         }
-        GuiLabel((Rectangle){ 2, 24+i*20, 253, 22}, FormatText("%08X:", tos+i*16-48));
+        GuiLabel((Rectangle){ 2, 24+i*20, 253, 22}, TextFormat("%08X:", tos+i*16-48));
         make_hex(buff, pl->memPtr, tos+i*16-48, pl->RamSize, 16);
-        GuiLabel((Rectangle){ 102, 24+i*20, 133, 22}, FormatText("%s", buff));
+        GuiLabel((Rectangle){ 102, 24+i*20, 133, 22}, TextFormat("%s", buff));
       }
      
 

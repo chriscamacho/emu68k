@@ -36,7 +36,7 @@ G_MODULE_EXPORT void initialise(void* inst)
   pl->size = (Vector2){256,216};    // size is always the same for all instances
   pl->outTx = LoadRenderTexture(pl->size.x, pl->size.y);  // plugin should only draw on this
   
-  SetTextureFilter(pl->outTx.texture, FILTER_BILINEAR); 
+  SetTextureFilter(pl->outTx.texture, TEXTURE_FILTER_BILINEAR); 
 
   // clear out / initialize anything in vars like strings etc
 
@@ -54,7 +54,7 @@ G_MODULE_EXPORT void setProperty(void* inst, char* prop, void* value) { }
 // This function can access the UI
 G_MODULE_EXPORT void draw(void* inst) 
 {
-	// rendering takes place on plugin instances render texture.
+    // rendering takes place on plugin instances render texture.
   plugInstStruct* pl = (plugInstStruct*)inst;
   regViewVars* vars = ((regViewVars*)pl->data);
   
@@ -104,10 +104,10 @@ G_MODULE_EXPORT void draw(void* inst)
           //printf("v=%08x\n",v);
         }
       }
-      GuiLabel((Rectangle){ 2, 4+i*20, 127, 22}, FormatText("D%i",i));
-      GuiLabel((Rectangle){ 129, 4+i*20, 64, 22}, FormatText("A%i",i,vars->regs[i+8]));
+      GuiLabel((Rectangle){ 2, 4+i*20, 127, 22}, TextFormat("D%i",i));
+      GuiLabel((Rectangle){ 129, 4+i*20, 64, 22}, TextFormat("A%i",i,vars->regs[i+8]));
     }
-    //GuiLabel((Rectangle){ 2, 4+8.25*20, 127, 22}, FormatText("PC %08X",vars->regs[M68K_REG_PC]));
+    //GuiLabel((Rectangle){ 2, 4+8.25*20, 127, 22}, TextFormat("PC %08X",vars->regs[M68K_REG_PC]));
     if (GuiTextBox((Rectangle){ 2, 4+8.25*20, 127, 22}, vars->regStr[M68K_REG_PC], 9, vars->editing[M68K_REG_PC])) {
       vars->editing[M68K_REG_PC]=!vars->editing[M68K_REG_PC];
       if (!vars->editing[M68K_REG_PC]) {
@@ -120,7 +120,7 @@ G_MODULE_EXPORT void draw(void* inst)
     }
 
     // want to do a bit editor for SR...
-    GuiLabel((Rectangle){ 129, 4+8.25*20, 64, 22}, FormatText("SR %02X",vars->regs[M68K_REG_SR]));
+    GuiLabel((Rectangle){ 129, 4+8.25*20, 64, 22}, TextFormat("SR %02X",vars->regs[M68K_REG_SR]));
     GuiLabel((Rectangle){ 129, 4+9.25*20, 64, 22}, srs);
     
   EndTextureMode();

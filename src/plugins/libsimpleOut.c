@@ -5,25 +5,25 @@
 #include "raylib.h"
 
 typedef struct {
-	byte val;
-	char bitNames[8][16];
+    byte val;
+    char bitNames[8][16];
 } simpleOutVars;
 
 
 G_MODULE_EXPORT void initialise(void* inst) //, Vector2 at, Font fnt) 
 {
-	
+    
   plugInstStruct* pl = (plugInstStruct*)inst;
   pl->data = malloc(sizeof(simpleOutVars));
   simpleOutVars* vars = ((simpleOutVars*)pl->data);
   pl->size = (Vector2){256,32};
 
-	pl->outTx = LoadRenderTexture(pl->size.x, pl->size.y);
-  SetTextureFilter(pl->outTx.texture, FILTER_BILINEAR); 
+    pl->outTx = LoadRenderTexture(pl->size.x, pl->size.y);
+  SetTextureFilter(pl->outTx.texture, TEXTURE_FILTER_BILINEAR); 
   if (pl->plug->resTx.id==0) pl->plug->resTx = LoadTexture("resources/led.png");
-  SetTextureFilter(pl->plug->resTx, FILTER_BILINEAR);  // Texture scale filter to use
+  SetTextureFilter(pl->plug->resTx, TEXTURE_FILTER_BILINEAR);  // Texture scale filter to use
 
-	vars->val = 0x00;
+    vars->val = 0x00;
   for(int i=0; i<8; i++) {
     vars->bitNames[i][0]=0;
   }
@@ -45,7 +45,7 @@ G_MODULE_EXPORT void setProperty(void* inst, char* prop, void* value)
 // This function can access the UI
 G_MODULE_EXPORT void draw(void* inst) 
 {
-	// rendering takes place on plugin instances render texture.
+    // rendering takes place on plugin instances render texture.
   plugInstStruct* pl = (plugInstStruct*)inst;
   simpleOutVars* vars = ((simpleOutVars*)pl->data);
   BeginTextureMode(pl->outTx);
@@ -59,9 +59,9 @@ G_MODULE_EXPORT void draw(void* inst)
     }
   }
   for (int i=0; i<8; i++) {
-    DrawTextEx(pl->plug->font, FormatText("%s",vars->bitNames[7-i]), (Vector2){ i*32+2, 1 }, 20, 2, WHITE);
+    DrawTextEx(pl->plug->font, TextFormat("%s",vars->bitNames[7-i]), (Vector2){ i*32+2, 1 }, 20, 2, WHITE);
   }
-  DrawTextEx(pl->plug->font, FormatText("%02X ",vars->val), (Vector2){ 120, 12 }, 20, 2, WHITE);
+  DrawTextEx(pl->plug->font, TextFormat("%02X ",vars->val), (Vector2){ 120, 12 }, 20, 2, WHITE);
   EndTextureMode();
 }
 
