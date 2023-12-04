@@ -250,7 +250,6 @@ char* nextlog()
 int main(int argc, char* argv[])
 {
 
-
   FILE* fhandle;
 
   if(argc != 3) {
@@ -349,7 +348,7 @@ int main(int argc, char* argv[])
   char buff[100];
   
   while(!WindowShouldClose()) {
-
+    double_t t1,t2;
     /* TODO this needs to go in a seperate thread
      * with mutex to block emulation while UI
      * is rendered from a static emulation state */
@@ -370,7 +369,9 @@ int main(int argc, char* argv[])
       } else {
         
         //7.09002mhz = 118167.0 cycles per 60th/second 
+        t1 = GetTime();
         m68k_execute(118167);
+        t2 = GetTime();
         /*
         m68k_execute(118159);
         m68k_execute(1);  
@@ -391,7 +392,7 @@ int main(int argc, char* argv[])
     BeginDrawing();
 
     ClearBackground(DARKGREEN);
-
+    DrawText(TextFormat("Sim time %d",t2-t1),0,700,16,WHITE);
     DrawFPS(1204, 700);
 
     unsigned int pc;
@@ -496,7 +497,7 @@ unsigned int m68k_read_memory_8(unsigned int address)
         return pl->getAddress(p, address);
       }
     }    
-    snprintf(nextlog(),80,"%08X : 8 bit read at %08X, %02X", cycles, address, mem[address]);
+    snprintf(nextlog(),80,"%08X: 8bit read at %08X, %02X", cycles, address, mem[address]);
     return mem[address];
   }
   
@@ -509,8 +510,9 @@ unsigned int m68k_read_memory_8(unsigned int address)
 unsigned int m68k_read_memory_16(unsigned int address) 
 {
   if (address < RAMSIZE-1) {
-    snprintf(nextlog(),80,"%08X : 16 bit read at %08X, %04X", cycles, address, mem[address]<<8 | mem[address+1]);
-    return mem[address]<<8 | mem[address+1];
+    unsigned int val = mem[address]<<8 | mem[address+1];
+    snprintf(nextlog(),80,"%08X: 16bit read at %08X, %04X", cycles, address, val);
+    return val;
   }
   snprintf(nextlog(),80,"r16 ERROR bus error, access not handled %08X",address);
   setRunning(false);
@@ -521,8 +523,9 @@ unsigned int m68k_read_memory_16(unsigned int address)
 unsigned int m68k_read_memory_32(unsigned int address) 
 {
   if (address < RAMSIZE-3) {
-    snprintf(nextlog(),80,"%08X : 32 bit read at %08X, %08X", cycles, address, mem[address]<<24 | mem[address+1]<<16 | mem[address+2]<<8 | mem[address+3]);
-    return mem[address]<<24 | mem[address+1]<<16 | mem[address+2]<<8 | mem[address+3];
+    unsigned int val = mem[address]<<24 | mem[address+1]<<16 | mem[address+2]<<8 | mem[address+3];
+    snprintf(nextlog(),80,"%08X: 32bit read at %08X, %08X", cycles, address, val);
+    return val;
   }
   snprintf(nextlog(),80,"r32 RROR bus error, access not handled %08X",address);
   setRunning(false);
@@ -535,7 +538,7 @@ void m68k_write_memory_8(unsigned int address, unsigned int value)
   if (address < RAMSIZE) {
     mem[address] = value & 0xff;
 
-    snprintf(nextlog(),80,"%08X : 8 bit write at %08X, %02X\n", cycles, address, mem[address]);
+    snprintf(nextlog(),80,"%08X: 8bit write at %08X, %02X\n", cycles, address, mem[address]);
     
     for (GList* l = plugins; l != NULL; l = l->next) {
       plugInstStruct* p = (plugInstStruct*)l->data;
@@ -543,9 +546,11 @@ void m68k_write_memory_8(unsigned int address, unsigned int value)
       int a = p->addressStart;
       int s = a + pl->getAddressSize(p);
       if ( address >= a && address < s ) {
-        return pl->setAddress(p, address, value);
+        pl->setAddress(p, address, value);
+        return;
       }
     } 
+
   } else {
     snprintf(nextlog(),80,"w8 ERROR bus error, access not handled %08X",address);
     setRunning(false);
@@ -558,7 +563,20 @@ void m68k_write_memory_16(unsigned int address, unsigned int value)
   if (address < RAMSIZE-1) {
     mem[address]   = (value>>8) & 0xff;
     mem[address+1] = (value)    & 0xff;
-    snprintf(nextlog(),80,"%08X : 16 bit write at %08X, %04X", cycles, address, value&0xffff);
+    snprintf(nextlog(),80,"%08X: 16bit write at %08X, %04X", cycles, address, value&0xffff);
+    
+    for (GList* l = plugins; l != NULL; l = l->next) {
+      plugInstStruct* p = (plugInstStruct*)l->data;
+      pluginStruct* pl = p->plug;
+      int a = p->addressStart;
+      int s = a + pl->getAddressSize(p)-2;
+      if ( address >= a && address < s ) {
+        pl->setAddress(p, address, (value>>8) & 0xff);
+        pl->setAddress(p, address+1, value & 0xff);
+        return;
+      }
+    } 
+    
   } else {
     setRunning(false);
     snprintf(nextlog(),80,"w16 ERROR bus error, access not handled %08X",address);
@@ -573,7 +591,21 @@ void m68k_write_memory_32(unsigned int address, unsigned int value)
     mem[address+1] = (value>>16) & 0xff;
     mem[address+2] = (value>>8)  & 0xff;
     mem[address+3] = (value)     & 0xff;
-    snprintf(nextlog(),80,"%08X : 32 bit write at %08X, %08X", cycles, address, value&0xffffffff);
+    snprintf(nextlog(),80,"%08X: 32bit write at %08X, %08X", cycles, address, value&0xffffffff);
+    
+    for (GList* l = plugins; l != NULL; l = l->next) {
+      plugInstStruct* p = (plugInstStruct*)l->data;
+      pluginStruct* pl = p->plug;
+      int a = p->addressStart;
+      int s = a + pl->getAddressSize(p)-4;
+      if ( address >= a && address < s ) {
+        pl->setAddress(p, address, (value>>24) & 0xff);
+        pl->setAddress(p, address+1, (value>>16) & 0xff);
+        pl->setAddress(p, address+2, (value>>8) & 0xff);
+        pl->setAddress(p, address+3, value & 0xff);
+        return;
+      }
+    } 
   } else {
     setRunning(false);
     snprintf(nextlog(),80,"w32 ERROR bus error, access not handled %08X",address);

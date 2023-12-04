@@ -55,7 +55,7 @@ G_MODULE_EXPORT void draw(void* inst)
   BeginTextureMode(pl->outTx);
     ClearBackground((Color){48,96,48,128});
     for(int i=0; i<16; i++) {
-      GuiLabel((Rectangle){ 2, 4+i*20, 254, 22}, vars->log[i]);
+      GuiLabel((Rectangle){ 2, 4+i*20, 512, 22}, vars->log[i]);
     }
   EndTextureMode();
 }
