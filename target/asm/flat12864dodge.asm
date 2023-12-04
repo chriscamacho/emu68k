@@ -31,7 +31,7 @@ start:
 
     move.l    #frameMess,A0      
     moveq     #7,D0
-    moveq     #55,D1
+    moveq     #56,D1
 
     jsr       print4            ; print the modified message
   
@@ -71,17 +71,32 @@ start:
  
     
 
-    moveq      #0,d0
-    move.b    (posx),d0
-    add.b     #1,d0
-    cmp.b     #119,d0
-    bne       xok
-    move.b    #0,d0
+    moveq       #0,d0
+    move.b      (posx),d0
+    
+    move.b      (JOY),d1
+    btst.b      #4,d1
+    beq         nxp     
+    add.b       #1,d0
+nxp:
+    cmp.b       #121,d0
+    bne         cxn
+    move.b      #120,d0
+cxn:
+    btst.b      #5,d1
+    beq         pxp
+    sub.b       #1,d0
+pxp:
+    cmp.b       #0,d0
+    bgt         xok
+    move.b      #0,d0
+    
 xok:
     move.b    d0,(posx)
     
 
-    moveq     #20,d1
+    ;moveq     #46,d1
+    moveq     #52,d1
     jsr       sprite
     
 
@@ -103,7 +118,7 @@ clsloop:
     move.b    #0,(A0)+          
     dbra      D0,clsloop
 
-		bra.w		  start			        ; main loop
+    bra.w     start        ; main loop
 
 
 
@@ -166,60 +181,70 @@ print4loop:
 
     moveq     #0,D4
     move.b    (A0)+,D4          ; 2nd char of pair
+
     cmp.b     #0,D4
     bne.s     print42ok
     move.w    #32,D4            ; D4 is second char in pair
 print42ok:
     sub.b     #32,D4            ; char data starts at ascii 32
     lsl.w     #3,D4             ; 8 lines per char
+
  
 
     move.b    0(A1,D3.w),D5     ; left of pair
     move.b    0(A1,D4.w),D6     ; right of pair
     lsl.b     #4,D5
     or.b      D5,D6
+    eori        #$ff,D6 ; invert
     move.b    D6,0(A2,D0.w)
     
     move.b    1(A1,D3.w),D5     ; left of pair
     move.b    1(A1,D4.w),D6     ; right of pair
     lsl.b     #4,D5
     or.b      D5,D6
+    eori        #$ff,D6 ; invert
     move.b    D6,16(A2,D0.w)
     
     move.b    2(A1,D3.w),D5     ; left of pair
     move.b    2(A1,D4.w),D6     ; right of pair
     lsl.b     #4,D5
     or.b      D5,D6
+    eori        #$ff,D6 ; invert
     move.b    D6,32(A2,D0.w)
     
     move.b    3(A1,D3.w),D5     ; left of pair
     move.b    3(A1,D4.w),D6     ; right of pair
     lsl.b     #4,D5
     or.b      D5,D6
+    eori        #$ff,D6 ; invert
     move.b    D6,48(A2,D0.w)
     
     move.b    4(A1,D3.w),D5     ; left of pair
     move.b    4(A1,D4.w),D6     ; right of pair
     lsl.b     #4,D5
     or.b      D5,D6
+    eori        #$ff,D6 ; invert
     move.b    D6,64(A2,D0.w)
     
     move.b    5(A1,D3.w),D5     ; left of pair
     move.b    5(A1,D4.w),D6     ; right of pair
     lsl.b     #4,D5
     or.b      D5,D6
+    eori        #$ff,D6 ; invert
     move.b    D6,80(A2,D0.w)
     
     move.b    6(A1,D3.w),D5     ; left of pair
     move.b    6(A1,D4.w),D6     ; right of pair
     lsl.b     #4,D5
     or.b      D5,D6
+    eori        #$ff,D6 ; invert
     move.b    D6,96(A2,D0.w)
     
     move.b    7(A1,D3.w),D5     ; left of pair
     move.b    7(A1,D4.w),D6     ; right of pair
     lsl.b     #4,D5
     or.b      D5,D6
+    eori        #$ff,D6 ; invert
     move.b    D6,112(A2,D0.w)
 
     cmp       #0,d4             ; was right of pair at message end
@@ -250,17 +275,19 @@ plot:
 
 
 smile:
-    dc.b	%00111100
-    dc.b	%01000010
-    dc.b	%10100101
-    dc.b	%10000001
-    dc.b	%10100101
-    dc.b	%10011001
-    dc.b	%01000010
-    dc.b	%00111100  
+    dc.b    %00111100
+    dc.b    %01000010
+    dc.b    %10100101
+    dc.b    %10000001
+    dc.b    %10100101
+    dc.b    %10011001
+    dc.b    %01000010
+    dc.b    %00111100  
+    
+    ;; TODO this should xor not overwrite
     
 sprite:
-    movem.l   d2-d4/a1,-(sp)
+    movem.l   d2-d5/a1,-(sp)
     move.l    #FBUF,a0
     move.l    #smile,a1
     
@@ -280,6 +307,7 @@ sprite:
 
     move.b    (a1),d4
     lsr.b     d2,d4
+
     move.b    d4,0(a0,d0)
     move.b    (a1)+,d4
     lsl.b     d3,d4
@@ -336,7 +364,7 @@ sprite:
 
 
     
-    movem.l   (sp)+,d2-d4/a1
+    movem.l   (sp)+,d2-d5/a1
     rts    
 
     ; variables

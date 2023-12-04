@@ -79,12 +79,13 @@ G_MODULE_EXPORT byte getAddress(void* inst, int address)
   // pack 8 pixels back into a byte
   
     plugInstStruct* pl = (plugInstStruct*)inst;
-/*  flat12864Vars* vars = ((flat12864Vars*)pl->data);
+  flat12864Vars* vars = ((flat12864Vars*)pl->data);
   unsigned short a = (address-pl->addressStart) >> 3;
   byte* p = (byte*)vars->screenImage.data;
-  byte t = 128;
-  byte b = 0;
-  
+
+/*
+    byte t = 128;
+  byte b = 0; 
   for(int i=0;i<8;i++) {
     if (p[a++]!=0) {
       b = b + t;
@@ -96,7 +97,8 @@ G_MODULE_EXPORT byte getAddress(void* inst, int address)
   }
 printf("\n");
 */
-    return pl->memPtr[address];
+    //return pl->memPtr[address];
+    return p[a];
 }
 
 G_MODULE_EXPORT void setAddress(void* inst, int address, byte data) 
