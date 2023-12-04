@@ -8,24 +8,24 @@ Emu68k is a simple program to allow a 68000 system to be simulated.  Different s
 
 It is mainly intended as a tool to help with my experiments with a 68008 and too many breadboards! I can code anywhere with an edit/make/run cycle and later test it assuming my hardware lash ups behave the same way as various device plugins!
 
-Its still early days and there is lots to do! [I'd welcome ideas and contributions, and relevant chat about hardware implementation.](http://bedroomcoders.co.uk/captcha/)
+Its still early days and there is lots to do! [I'd welcome ideas and contributions, and relevant chat about hardware implementation.](http://bedroomcoders.co.uk/contact)
 
 #### file structure
-	target/asm			68k assembly language files
-	target/machines		machine specification files
-	plugins				plugin library binaries
-	obj					build objects
-	readme.md			this file
-	src					C source code
-	src/plugins			C source for plugins
-	screenies			screen shots
-	plug-src			C source code for plugins
-	Makefile		
-	include				include sources
-	resources			runtime resources (textures etc) for emu68k and plugins
-	support/Musashi		68k simulation library
-	support/srec		srecord files utility
-	support/a68k		68k assembler
+    target/asm          68k assembly language files
+    target/machines     machine specification files
+    plugins             plugin library binaries
+    obj                 build objects
+    readme.md           this file
+    src                 C source code
+    src/plugins         C source for plugins
+    screenies           screen shots
+    plug-src            C source code for plugins
+    Makefile        
+    include             include sources
+    resources           runtime resources (textures etc) for emu68k and plugins
+    support/Musashi     68k simulation library
+    support/srec        srecord files utility
+    support/a68k        68k assembler
 
 
 ## Building
@@ -36,14 +36,14 @@ Additionally you will need to get and compile [raylib](http://raylib.com ) (gith
 
 The Makefile is expecting raylib to be at the same directory level that emu68k is:
 
-	./devel/emu68k/
-	./devel/raylib/
+    ./devel/emu68k/
+    ./devel/raylib/
 
 usually building raylib is simply a case of entering raylib/src and running make.
 
 **Note** that Musashi is now a submodule, you might need to do:
 
-	git submodule update --init --recursive
+    git submodule update --init --recursive
 
 There is no need to build and run the op code generator as that is done automagically if needed, if you need to change the settings there is a separate config file include/m68kconf-emu68k.h, the Musashi sources are directly included with the build.
 
@@ -59,7 +59,7 @@ Binary files are assumed to start at 0x0 (vector table!) and be a single continu
 
 emu68k is invoked from the command line and requires two parameters
 
-	./emu68k machines/machine1.xml asm-src/machine1test1.bin
+    ./emu68k machines/machine1.xml asm-src/machine1test1.bin
 
 the first parameter is the machine specification file, the latter being the binary file to load into "ram", its a good idea to specify in the file name for a binary, which machine specification file it requires.
 
@@ -71,7 +71,7 @@ The remainder of the items on the screen are provided by plugin instances.
 
 Pressing the space bar will single step the 68000. It also serves to halt a run. If you want to skip an instruction press s. You can set the system running by pressing the r key, every 60th of a second it will execute 100,000 instructions then update the UI.  When running with a suitable binary can result in such extravaganzas as the 8x8x1 sprite editor as seen in the above screen shot and this [short video](https://youtu.be/pJ5as4MCeCk).
 
- 	
+    
 
 ## Machine specification files
 
