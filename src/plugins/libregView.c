@@ -107,7 +107,7 @@ G_MODULE_EXPORT void draw(void* inst)
       GuiLabel((Rectangle){ 2, 4+i*20, 127, 22}, TextFormat("D%i",i));
       GuiLabel((Rectangle){ 129, 4+i*20, 64, 22}, TextFormat("A%i",i,vars->regs[i+8]));
     }
-    //GuiLabel((Rectangle){ 2, 4+8.25*20, 127, 22}, TextFormat("PC %08X",vars->regs[M68K_REG_PC]));
+    //GuiLabel((Rectangle){ 2, 4+8.25*23, 127, 22}, TextFormat("PC %08X",vars->regs[M68K_REG_PC]));
     if (GuiTextBox((Rectangle){ 2, 4+8.25*20, 127, 22}, vars->regStr[M68K_REG_PC], 9, vars->editing[M68K_REG_PC])) {
       vars->editing[M68K_REG_PC]=!vars->editing[M68K_REG_PC];
       if (!vars->editing[M68K_REG_PC]) {
@@ -120,8 +120,8 @@ G_MODULE_EXPORT void draw(void* inst)
     }
 
     // want to do a bit editor for SR...
-    GuiLabel((Rectangle){ 129, 4+8.25*20, 64, 22}, TextFormat("SR %02X",vars->regs[M68K_REG_SR]));
-    GuiLabel((Rectangle){ 129, 4+9.25*20, 64, 22}, srs);
+    GuiLabel((Rectangle){ 129, 4+8.25*20, 127, 22}, TextFormat("SR %02X",vars->regs[M68K_REG_SR]));
+    GuiLabel((Rectangle){ 129, 4+9.25*20, 127, 22}, srs);
     
   EndTextureMode();
 

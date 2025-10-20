@@ -95,8 +95,8 @@ xok:
     move.b    d0,(posx)
     
 
-    ;moveq     #46,d1
-    moveq     #52,d1
+    moveq     #46,d1
+    ;moveq     #52,d1
     jsr       sprite
     
 
@@ -295,71 +295,135 @@ sprite:
     
     moveq     #0,d2
     moveq     #8,d3
-    move.b    d0,d2
-    and.b     #7,d2
-    sub.b     d2,d3
+    move.b    d0,d2     ; d0 = x
+    and.b     #7,d2     ; d2 = x % 8  ( shift )
+    sub.b     d2,d3     ; d3 = 7 - (x % 8)
 
     
    
-    lsr.b     #3,d0
-    lsl.w     #4,d1
-    add.w     d1,d0
+    lsr.b     #3,d0     ; d0 = x / 8
+    lsl.w     #4,d1     ; d1 = y * 16
+    add.w     d1,d0     ; d0 = address offset (in chars)
 
-    move.b    (a1),d4
-    lsr.b     d2,d4
+    move.b    (a1),d4   ; sprite data
+    lsr.b     d2,d4     ; x shift
+
+    move.b    0(a0,d0),d5
+    or.b       d5,d4
 
     move.b    d4,0(a0,d0)
     move.b    (a1)+,d4
     lsl.b     d3,d4
+    
+    move.b    1(a0,d0),d5
+    or.b       d5,d4
+
     move.b    d4,1(a0,d0)
 
     move.b    (a1),d4
     lsr.b     d2,d4
+    
+    move.b      d5,16(a0,d0)
+    or.b       d5,d4
+    
     move.b    d4,16(a0,d0)
     move.b    (a1)+,d4
     lsl.b     d3,d4
     move.b    d4,17(a0,d0)
 
-    move.b    (a1),d4
-    lsr.b     d2,d4
-    move.b    d4,32(a0,d0)
-    move.b    (a1)+,d4
-    lsl.b     d3,d4
-    move.b    d4,33(a0,d0)
+    move.b      d5,17(a0,d0)
+    or.b       d5,d4
 
     move.b    (a1),d4
     lsr.b     d2,d4
+    
+    move.b      d5,32(a0,d0)
+    or.b       d5,d4
+    
+    move.b    d4,32(a0,d0)
+    move.b    (a1)+,d4
+    lsl.b     d3,d4
+    
+    move.b      d5,32(a0,d0)
+    or.b       d5,d4
+    
+    move.b    d4,33(a0,d0)
+
+    move.b      d5,33(a0,d0)
+    or.b       d5,d4
+    
+    move.b    (a1),d4
+    lsr.b     d2,d4
+    
+    move.b      d5,48(a0,d0)
+    or.b       d5,d4
+    
     move.b    d4,48(a0,d0)
     move.b    (a1)+,d4
     lsl.b     d3,d4
+    
+    move.b      d5,49(a0,d0)
+    or.b       d5,d4
+    
     move.b    d4,49(a0,d0)
 
     move.b    (a1),d4
     lsr.b     d2,d4
     move.b    d4,64(a0,d0)
+    
+    move.b      d5,64(a0,d0)
+    or.b       d5,d4
+    
     move.b    (a1)+,d4
     lsl.b     d3,d4
     move.b    d4,65(a0,d0)
+    
+    move.b      d5,65(a0,d0)
+    or.b       d5,d4
 
     move.b    (a1),d4
     lsr.b     d2,d4
     move.b    d4,80(a0,d0)
+    
+    move.b      d5,80(a0,d0)
+    or.b       d5,d4
+    
     move.b    (a1)+,d4
     lsl.b     d3,d4
+    
+    move.b      d5,81(a0,d0)
+    or.b       d5,d4
+    
     move.b    d4,81(a0,d0)
 
     move.b    (a1),d4
     lsr.b     d2,d4
+    
+    move.b      d5,96(a0,d0)
+    or.b       d5,d4
+    
     move.b    d4,96(a0,d0)
     move.b    (a1)+,d4
     lsl.b     d3,d4
+    
+    move.b      d5,97(a0,d0)
+    or.b       d5,d4
+    
     move.b    d4,97(a0,d0)
 
     move.b    (a1),d4
     lsr.b     d2,d4
     move.b    d4,112(a0,d0)
+    
+    move.b      d5,112(a0,d0)
+    or.b       d5,d4
+    
     move.b    (a1)+,d4
     lsl.b     d3,d4
+    
+    move.b      d5,113(a0,d0)
+    or.b       d5,d4
+    
     move.b    d4,113(a0,d0)
 
 
