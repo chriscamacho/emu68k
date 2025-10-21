@@ -55,11 +55,11 @@ G_MODULE_EXPORT void draw(void* inst)
     
     // run stop button
     vars->running = isRunning(); // in case something else stops us (break plugin for example)
-    bool res;
+    
     if (vars->running) {
-      res = GuiToggle((Rectangle){0,0,48,31}, "Stop", &vars->running);
+      GuiToggle((Rectangle){0,0,48,31}, "Stop", &vars->running);
     } else {
-      res = GuiToggle((Rectangle){0,0,48,31}, "Run", &vars->running);
+      GuiToggle((Rectangle){0,0,48,31}, "Run", &vars->running);
     }
 
     setRunning(vars->running);
