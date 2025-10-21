@@ -14,7 +14,7 @@ void integratePlugin(pluginStruct *plugin)
         exit(-1);
     }
 
-    curr = g_get_current_dir();  // UTF-8 safe version
+    curr = g_get_current_dir();
     plug = g_build_filename(curr, "plugins", NULL);
     module_path = g_build_filename(plug, plugin->libName, NULL);
 

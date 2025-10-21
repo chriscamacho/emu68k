@@ -62,7 +62,7 @@ G_MODULE_EXPORT void draw(void* inst)
         int instr_size = m68k_disassemble(buff, pc, M68K_CPU_TYPE_68000);
         make_hex(buff2, pl->memPtr, pc, pl->RamSize, instr_size);
         GuiSetStyle(LABEL, TEXT_COLOR_NORMAL, 0xffff00ff);
-        GuiLabel((Rectangle){ 8, 4, 512, 18}, TextFormat("?%08X:%-15s:%s", pc, buff2, buff));
+        GuiLabel((Rectangle){ 8, 4, 512, 18}, TextFormat("%08X:%-15s:%s", pc, buff2, buff));
         GuiSetStyle(LABEL, TEXT_COLOR_NORMAL, 0xffffffff);
         
         for (int i=0;i<5;i++) {
@@ -70,7 +70,7 @@ G_MODULE_EXPORT void draw(void* inst)
           instr_size = m68k_disassemble(buff, pc, M68K_CPU_TYPE_68000);
           make_hex(buff2, pl->memPtr, pc, pl->RamSize, instr_size);
 
-          GuiLabel((Rectangle){ 8, 24+i*20, 512, 22}, TextFormat("!%08X:%-15s:%s", pc, buff2, buff));
+          GuiLabel((Rectangle){ 8, 24+i*20, 512, 22}, TextFormat("%08X:%-15s:%s", pc, buff2, buff));
             
 
         }

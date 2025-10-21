@@ -17,8 +17,7 @@
 #define screenHeight 720
 
 /*
- TODO still very work in progress !
- some code needs seperating out into different units...
+ TODO some code needs seperating out into different units...
  UI going into plugins... 
  */
 
@@ -538,8 +537,7 @@ void m68k_write_memory_8(unsigned int address, unsigned int value)
 {
   if (address < RAMSIZE) {
     mem[address] = value & 0xff;
-
-    snprintf(nextlog(),80,"%08X: 8bit write at %08X, %02X\n", cycles, address, mem[address]);
+    snprintf(nextlog(),80,"%08X: 8bit write at %08X, %02X", cycles, address, mem[address]);
     
     for (GList* l = plugins; l != NULL; l = l->next) {
       plugInstStruct* p = (plugInstStruct*)l->data;
@@ -552,6 +550,7 @@ void m68k_write_memory_8(unsigned int address, unsigned int value)
       }
     } 
 
+
   } else {
     snprintf(nextlog(),80,"w8 ERROR bus error, access not handled %08X",address);
     setRunning(false);
@@ -561,9 +560,11 @@ void m68k_write_memory_8(unsigned int address, unsigned int value)
 // TODO plugin ranges
 void m68k_write_memory_16(unsigned int address, unsigned int value) 
 {
+
   if (address < RAMSIZE-1) {
     mem[address]   = (value>>8) & 0xff;
     mem[address+1] = (value)    & 0xff;
+
     snprintf(nextlog(),80,"%08X: 16bit write at %08X, %04X", cycles, address, value&0xffff);
     
     for (GList* l = plugins; l != NULL; l = l->next) {
